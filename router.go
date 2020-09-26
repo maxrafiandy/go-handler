@@ -35,11 +35,6 @@ func (e PageNotFound404) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	encoder := json.NewEncoder(w)
 	encoder.Encode(&Response{Message: MessagePageNotFound, Data: nil})
-	log := make(map[string]interface{})
-	log["message"] = MessagePageNotFound
-	log["status"] = http.StatusNotFound
-	log["data"] = nil
-	Logger(log)
 }
 
 // ServeHTTP impementation of MethodNotAllowed405
