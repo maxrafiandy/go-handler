@@ -1,5 +1,10 @@
 package handler
 
+import (
+	"github.com/go-redis/redis"
+	"github.com/jinzhu/gorm"
+)
+
 // private constants
 const (
 	formatDateYMD           string = "20060102"
@@ -67,4 +72,16 @@ const (
 
 	// MessageDeleted holds default message for deleted
 	MessageDeleted = "Deleted"
+)
+
+// private variables
+var (
+	gormDBs  map[string]*gorm.DB      = make(map[string]*gorm.DB)
+	redisDBs map[string]*redis.Client = make(map[string]*redis.Client)
+)
+
+// public variables
+var (
+	// GormProps maps database properties
+	GormProps map[string]*GormProp = make(map[string]*GormProp)
 )

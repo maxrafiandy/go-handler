@@ -41,3 +41,22 @@ func (u URLQuery) Validate() error {
 		validation.Field(&u.Keyword, validation.Match(isAlphanumeric)),
 	)
 }
+
+// GormProp struct for database connection
+type GormProp struct {
+	Host             string
+	Port             string
+	User             string
+	Pass             string
+	Database         string
+	Driver           string
+	ConnectionString string
+}
+
+// RedisProp struct for cached connection
+type RedisProp struct {
+	Host     string
+	Port     string
+	Pass     string
+	Database int
+}
