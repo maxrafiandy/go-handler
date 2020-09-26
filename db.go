@@ -78,8 +78,8 @@ func RedisAdd(alias string, prop *RedisProp) *redis.Client {
 	if redisDBs[alias] == nil {
 		redisDBs[alias] = redis.NewClient(&redis.Options{
 			Addr:     fmt.Sprintf("%s:%s", prop.Host, prop.Port),
-			Password: prop.Pass, // no password set
-			DB:       0,         // use default DB
+			Password: prop.Pass,
+			DB:       prop.Database,
 		})
 	}
 
