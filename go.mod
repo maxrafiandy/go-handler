@@ -1,4 +1,4 @@
-module github.com/maxrafiandy/handler
+module github.com/maxrafiandy/go-handler
 
 go 1.15
 
