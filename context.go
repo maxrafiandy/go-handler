@@ -8,8 +8,26 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var contextPool sync.Pool
-var contextRestPool sync.Pool
+var (
+	contextPool sync.Pool
+)
+
+type (
+	context interface {
+		ServeHTTP(http.ResponseWriter, *http.Response)
+	}
+
+	// Context context
+	Context struct {
+		handlers map[string]ContextFunc
+		Router   *mux.Router
+		Writer   http.ResponseWriter
+		Request  *http.Request
+	}
+
+	// ContextFunc func
+	ContextFunc func(*Context)
+)
 
 // New create new Context
 func New(middlewares ...mux.MiddlewareFunc) *Context {
@@ -32,23 +50,6 @@ func New(middlewares ...mux.MiddlewareFunc) *Context {
 // Serve call http.ListenAndServe with default setting
 func (c *Context) Serve(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), c.Router)
-}
-
-// ContextFunc func
-type ContextFunc func(*Context)
-
-type context interface {
-	// SetRequest(*http.Request)
-	// SetWriter(http.ResponseWriter)
-	ServeHTTP(http.ResponseWriter, *http.Response)
-}
-
-// Context context
-type Context struct {
-	handlers map[string]ContextFunc
-	Router   *mux.Router
-	Writer   http.ResponseWriter
-	Request  *http.Request
 }
 
 // HandlerFunc exec request
@@ -118,24 +119,39 @@ func (c *Context) DELETE(path string, ctx ContextFunc, middlewares ...mux.Middle
 	c.add(delete, path, ctx, middlewares)
 }
 
-// Success send success response with result data
-func (c *Context) Success(data interface{}) {
-	response(c.Writer, MessageOK, data, http.StatusOK)
-}
-
 // Created send success response with result data
 func (c *Context) Created(data interface{}) {
 	response(c.Writer, MessageCreated, data, http.StatusCreated)
 }
 
-// InternalServerError send general 500-interal server error
-func (c *Context) InternalServerError(data error) {
-	response(c.Writer, MessageInternalServerError, data, http.StatusInternalServerError)
+// Success send success response with result data
+func (c *Context) Success(data interface{}) {
+	response(c.Writer, MessageOK, data, http.StatusOK)
+}
+
+// Success send success response with result data
+func (c *Context) NoContent() {
+	response(c.Writer, MessageNoContent, nil, http.StatusNoContent)
 }
 
 // BadRequest send general 400-bad request
 func (c *Context) BadRequest(data error) {
 	response(c.Writer, MessageBadRequest, data, http.StatusBadRequest)
+}
+
+// NotFound send general 200-OK withoud data
+func (c *Context) NotFound() {
+	response(c.Writer, MessageNotFound, nil, http.StatusOK)
+}
+
+// PageNotFound send general 404-Page not found
+func (c *Context) PageNotFound() {
+	response(c.Writer, MessagePageNotFound, nil, http.StatusNotFound)
+}
+
+// InternalServerError send general 500-interal server error
+func (c *Context) InternalServerError(data error) {
+	response(c.Writer, MessageInternalServerError, data, http.StatusInternalServerError)
 }
 
 // Unauthorized send general 401-unautirized

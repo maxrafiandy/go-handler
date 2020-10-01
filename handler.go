@@ -148,7 +148,7 @@ func DecodeURLQuery(w http.ResponseWriter, v url.Values) (URLQuery, bool) {
 	decoder := schema.NewDecoder()
 	decoder.Decode(&args, v)
 	if err := args.Validate(); err != nil {
-		badRequest(w, err)
+		response(w, MessageBadRequest, err, http.StatusBadRequest)
 		return args, false
 	}
 
@@ -162,20 +162,4 @@ func response(w http.ResponseWriter, message string, data interface{}, status in
 	encoder.Encode(response)
 
 	Logger(response)
-}
-
-func badRequest(w http.ResponseWriter, data interface{}) {
-	response(w, MessageBadRequest, data, http.StatusBadRequest)
-}
-
-func unauthorized(w http.ResponseWriter, data interface{}) {
-	response(w, MessageUnauthorized, data, http.StatusUnauthorized)
-}
-
-func methodNotAllowed(w http.ResponseWriter) {
-	response(w, MessageMethodNotAllowed, nil, http.StatusMethodNotAllowed)
-}
-
-func success(w http.ResponseWriter, data interface{}) {
-	response(w, MessageOK, data, http.StatusOK)
 }

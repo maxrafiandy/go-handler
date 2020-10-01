@@ -53,7 +53,7 @@ func MapRest(rest RestHandlers, w http.ResponseWriter, r *http.Request) {
 		case delete:
 			rest.Delete()
 		default:
-			methodNotAllowed(w)
+			response(w, MessageMethodNotAllowed, nil, http.StatusMethodNotAllowed)
 		}
 	} else { // route to /{id:[0-9]+}
 		switch r.Method {
@@ -66,7 +66,7 @@ func MapRest(rest RestHandlers, w http.ResponseWriter, r *http.Request) {
 		case delete:
 			rest.DeleteID(id)
 		default:
-			methodNotAllowed(w)
+			response(w, MessageMethodNotAllowed, nil, http.StatusMethodNotAllowed)
 		}
 	}
 }
@@ -88,21 +88,16 @@ func (c RestContext) NoContent() {
 }
 
 // BadRequest send general 400-bad request
-func (c RestContext) BadRequest(data interface{}) {
+func (c RestContext) BadRequest(data error) {
 	response(c.Writer, MessageBadRequest, data, http.StatusBadRequest)
 }
 
-// NotFound send general 404-Not found.
+// NotFound send general 200-Succes withoud data.
 // this method is equal to PageNotFound() and usually
 // used when record was not found in collection instead of
 // return a page not found message
 func (c RestContext) NotFound() {
-	response(c.Writer, MessageNotFound, nil, http.StatusNotFound)
-}
-
-// InternalServerError send general 500-interal server error
-func (c RestContext) InternalServerError(data interface{}) {
-	response(c.Writer, MessageInternalServerError, data, http.StatusInternalServerError)
+	response(c.Writer, MessageNotFound, nil, http.StatusOK)
 }
 
 // PageNotFound send general 404-not found.
@@ -110,6 +105,11 @@ func (c RestContext) InternalServerError(data interface{}) {
 // page not found message
 func (c RestContext) PageNotFound() {
 	response(c.Writer, MessagePageNotFound, nil, http.StatusNotFound)
+}
+
+// InternalServerError send general 500-interal server error
+func (c RestContext) InternalServerError(data error) {
+	response(c.Writer, MessageInternalServerError, data, http.StatusInternalServerError)
 }
 
 // MethodNotAllowed send general 405-method not allowed
