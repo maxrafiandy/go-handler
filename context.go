@@ -29,7 +29,8 @@ func New(middlewares ...mux.MiddlewareFunc) *Context {
 	return h
 }
 
-func (c *Context) ListenAndServe(port int) error {
+// Serve call http.ListenAndServe with default setting
+func (c *Context) Serve(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), c.Router)
 }
 
