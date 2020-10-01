@@ -9,14 +9,14 @@ import (
 // Response struct hold default server response
 type Response struct {
 	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+	Data    interface{} `json:"data,omitempty"`
 }
 
 // Error inherits error interface
 type Error struct {
 	error
 	Description string `json:"description"`
-	Errors      error  `json:"error,ommitempty"`
+	Errors      error  `json:"error,omitempty"`
 }
 
 // Error implementation of error interface

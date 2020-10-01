@@ -71,100 +71,93 @@ func MapRest(rest RestHandlers, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// InitRest initialize restful writer and request
-func (rest RestContext) InitRest(h RestHandlers, w http.ResponseWriter, r *http.Request) {
-	rest.Writer = w
-	rest.Request = r
-	MapRest(h, w, r)
-}
-
 // Created send success response when a record was successfully created
-func (rest RestContext) Created(data interface{}) {
-	response(rest.Writer, MessageCreated, data, http.StatusCreated)
+func (c RestContext) Created(data interface{}) {
+	response(c.Writer, MessageCreated, data, http.StatusCreated)
 }
 
 // Success send success response with result data
-func (rest RestContext) Success(data interface{}) {
-	response(rest.Writer, MessageOK, data, http.StatusOK)
+func (c RestContext) Success(data interface{}) {
+	response(c.Writer, MessageOK, data, http.StatusOK)
 }
 
 // NoContent send success response without any content.
 // this method usually used with update method.
-func (rest RestContext) NoContent() {
-	response(rest.Writer, MessageNoContent, nil, http.StatusNoContent)
+func (c RestContext) NoContent() {
+	response(c.Writer, MessageNoContent, nil, http.StatusNoContent)
 }
 
 // BadRequest send general 400-bad request
-func (rest RestContext) BadRequest(data interface{}) {
-	response(rest.Writer, MessageBadRequest, data, http.StatusBadRequest)
+func (c RestContext) BadRequest(data interface{}) {
+	response(c.Writer, MessageBadRequest, data, http.StatusBadRequest)
 }
 
 // NotFound send general 404-Not found.
 // this method is equal to PageNotFound() and usually
 // used when record was not found in collection instead of
 // return a page not found message
-func (rest RestContext) NotFound() {
-	response(rest.Writer, MessageNotFound, nil, http.StatusNotFound)
+func (c RestContext) NotFound() {
+	response(c.Writer, MessageNotFound, nil, http.StatusNotFound)
 }
 
 // InternalServerError send general 500-interal server error
-func (rest RestContext) InternalServerError(data interface{}) {
-	response(rest.Writer, MessageInternalServerError, data, http.StatusInternalServerError)
+func (c RestContext) InternalServerError(data interface{}) {
+	response(c.Writer, MessageInternalServerError, data, http.StatusInternalServerError)
 }
 
 // PageNotFound send general 404-not found.
 // this method is equal to NotFound() but returns
 // page not found message
-func (rest RestContext) PageNotFound() {
-	response(rest.Writer, MessagePageNotFound, nil, http.StatusNotFound)
+func (c RestContext) PageNotFound() {
+	response(c.Writer, MessagePageNotFound, nil, http.StatusNotFound)
 }
 
 // MethodNotAllowed send general 405-method not allowed
-func (rest RestContext) MethodNotAllowed() {
-	response(rest.Writer, MessageMethodNotAllowed, errMethodNotAllowed, http.StatusMethodNotAllowed)
+func (c RestContext) MethodNotAllowed() {
+	response(c.Writer, MessageMethodNotAllowed, errMethodNotAllowed, http.StatusMethodNotAllowed)
 }
 
 // Get implements Get() function
-func (rest RestContext) Get() {
-	rest.MethodNotAllowed()
+func (c RestContext) Get() {
+	c.MethodNotAllowed()
 }
 
 // GetID implements Find() function
-func (rest RestContext) GetID(id string) {
-	rest.MethodNotAllowed()
+func (c RestContext) GetID(id string) {
+	c.MethodNotAllowed()
 }
 
 // Post implements Post() function
-func (rest RestContext) Post() {
-	rest.MethodNotAllowed()
+func (c RestContext) Post() {
+	c.MethodNotAllowed()
 }
 
 // PutID implements Put() function
-func (rest RestContext) PutID(id string) {
-	rest.MethodNotAllowed()
+func (c RestContext) PutID(id string) {
+	c.MethodNotAllowed()
 }
 
 // Put implements Put() function
-func (rest RestContext) Put() {
-	rest.MethodNotAllowed()
+func (c RestContext) Put() {
+	c.MethodNotAllowed()
 }
 
 // PatchID implements PatchID() function
-func (rest RestContext) PatchID(id string) {
-	rest.MethodNotAllowed()
+func (c RestContext) PatchID(id string) {
+	c.MethodNotAllowed()
 }
 
 // Patch implements Patch() function
-func (rest RestContext) Patch() {
-	rest.MethodNotAllowed()
+func (c RestContext) Patch() {
+	c.MethodNotAllowed()
 }
 
 // DeleteID implements DeleteID() function
-func (rest RestContext) DeleteID(id string) {
-	rest.MethodNotAllowed()
+func (c RestContext) DeleteID(id string) {
+	c.MethodNotAllowed()
 }
 
 // Delete implements Delete() function
-func (rest RestContext) Delete() {
-	rest.MethodNotAllowed()
+func (c RestContext) Delete() {
+	c.MethodNotAllowed()
 }
