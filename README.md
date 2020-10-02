@@ -3,8 +3,8 @@ This handler use [gorilla mux](https://github.com/gorilla/mux) structs as defaul
 
 # How to use
 - Run `go get github.com/maxrafiandy/go-handler`
-- Set enviroment variable `ERROR_IMAGE` with value /path/to/error/image.png (default is a blank white rectangle)
-- Create log directory in your project directory. The log file will be written in *.log (if log directory is not exist it will created automatically by logger func)
+- Set enviroment variable `ERROR_IMAGE` with value */path/to/error/image.png* (default is a blank white rectangle)
+- Create log directory in your project directory. The log file will be written in \*.log (if log directory is not exist it will created automatically by logger func)
 
 # Example
 ## Routing
