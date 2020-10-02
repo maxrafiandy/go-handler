@@ -46,11 +46,11 @@ func main() {
 	goHandler = handler.New(handler.JSONfy)
 
 	goHandler.GET("/example-get", func(ctx *handler.Context) {
-		ctx.Created("Hello, GET!")
+		ctx.Success("Hello, GET!")
 	})
 
 	goHandler.POST("/example-post", func(ctx *handler.Context) {
-		ctx.Unauthorized("Hello, POST!")
+		ctx.Created("Hello, POST!")
 	})
 
 	goHandler.REST("/example-rest", func(ctx *handler.Context) {
