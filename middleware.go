@@ -24,8 +24,8 @@ func AddCSP(next http.Handler) http.Handler {
 	})
 }
 
-// JSONfy sets content type to application json
-func JSONfy(next http.Handler) http.Handler {
+// JSONify sets content type to application json
+func JSONify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set(contentType, "application/json")
 		next.ServeHTTP(w, r)

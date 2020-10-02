@@ -64,5 +64,5 @@ func main() {
 ```
 goHandler.REST("/example-rest", func(ctx *handler.Context) {
 		handler.REST(&rest, ctx)
-}, handler.JSONfy)
+}, handler.JSONify)
 ```
