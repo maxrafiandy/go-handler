@@ -68,11 +68,10 @@ goHandler.REST("/example-rest", func(ctx *handler.Context) {
 ```
 ## Accessing database
 ```
-// Connect to database (supported driver: mysql, postgres, mssql
-handler.GormAdd("default", handler.NewGormProp("localhos", "3306", "userdb", "password", "dbname", "driver"))
+// Connect to database (supported driver: mysql, postgres, mssql)
+handler.GormAdd("connectionName", handler.NewGormProp("localhost", "3306", "userdb", "password", "dbname", "driver"))
 
-// Get gorm object 
-// This object is just *gorm.DB object with default 
-// read office documentation for more information.
-db := handler.GormGet("default")
+// GormGet returns a *gorm.DB object with preload enabled.
+// for more details read official gorm documentation.
+db := handler.GormGet("connectionName")
 ```
