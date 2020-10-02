@@ -39,6 +39,12 @@ func Logging(next http.Handler) http.Handler {
 		// log incoming request details
 		now := time.Now().Format(formatDateYMD)
 
+		if _, err := os.Stat("log"); os.IsNotExist(err) {
+			if err = os.Mkdir("log", os.ModeDir); err != nil {
+				log.Fatal(err)
+			}
+		}
+
 		filepath := fmt.Sprintf("log/REQUEST_%s.log", now)
 		file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {

@@ -206,7 +206,7 @@ func (c *Context) InternalServerError(data error) {
 
 // Unauthorized send general 401-unautirized
 func (c *Context) Unauthorized(data error) {
-	response(c.Writer, MessageUnauthorized, nil, http.StatusUnauthorized)
+	response(c.Writer, MessageUnauthorized, data, http.StatusUnauthorized)
 }
 
 // Forbidden send general 403-forbidden

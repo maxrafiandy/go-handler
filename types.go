@@ -20,8 +20,8 @@ type Error struct {
 }
 
 // Error implementation of error interface
-func (m *Error) Error() string {
-	return m.Description
+func (e *Error) Error() string {
+	return e.Description
 }
 
 // URLQuery struct for Server Side Rendering
