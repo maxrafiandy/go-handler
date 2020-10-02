@@ -2,7 +2,8 @@
 This handler use [gorilla mux](https://github.com/gorilla/mux) structs as default router and [gorm](https://github.com/jinzhu/gorm) as default ORM
 
 # How to use
-- Set enviroment variable ERROR_IMAGE with value /path/to/error/image.png (default is a blank white rectangle)
+- Run `go get github.com/maxrafiandy/go-handler`
+- Set enviroment variable `ERROR_IMAGE` with value /path/to/error/image.png (default is a blank white rectangle)
 - Create log directory in your project directory. The log file will be written in *.log (if log directory is not exist it will created automatically by logger func)
 
 # Example
@@ -68,7 +69,8 @@ goHandler.REST("/example-rest", func(ctx *handler.Context) {
 ```
 ## Accessing database
 ```
-// Connect to database (supported driver: mysql, postgres, mssql)
+// Connect to database (supported driver: mysql, postgres, mssql).
+// set DEBUG_MODE in your enviroment variable to enable console debuging of gorm itself. 
 handler.GormAdd("connectionName", handler.NewGormProp("localhost", "3306", "userdb", "password", "dbname", "driver"))
 
 // GormGet returns a *gorm.DB object with preload enabled.
