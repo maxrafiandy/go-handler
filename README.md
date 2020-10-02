@@ -11,65 +11,65 @@ This handler use [gorilla mux](https://github.com/gorilla/mux) structs as defaul
 package main
 
 import (
-	"fmt"
-	"log"
+  "fmt"
+  "log"
 
-	"github.com/maxrafiandy/go-handler"
+  "github.com/maxrafiandy/go-handler"
 )
 
 type testRest struct {
-	handler.Context
+  handler.Context
 }
 
 func (t *testRest) Get() interface{} {
-	return t.Success("Hello, REST Get!")
+  return t.Success("Hello, REST Get!")
 }
 
 func (t *testRest) Post() interface{} {
-	return t.Success("Hello, REST Post!")
+  return t.Success("Hello, REST Post!")
 }
 
 func (t *testRest) GetID(id string) interface{} {
-	return t.Success(fmt.Sprintf("Hellon, GET ID %s", id))
+  return t.Success(fmt.Sprintf("Hellon, GET ID %s", id))
 }
 
 func (t *testRest) PutID(id string) interface{} {
-	return t.Success(fmt.Sprintf("Hellon, PUT ID %s", id))
+  return t.Success(fmt.Sprintf("Hellon, PUT ID %s", id))
 }
 
 func main() {
-	var (
-		goHandler *handler.Context
-		rest      testRest
-	)
+  var (
+    goHandler *handler.Context
+    rest      testRest
+  )
 
-	goHandler = handler.New(handler.JSONify, handler.Logging)
+  goHandler = handler.New(handler.JSONify, handler.Logging)
 
-	goHandler.GET("/example-get", func(ctx *handler.Context) interface{} {
-		return ctx.Unauthorized(&handler.Error{Description: "Not authorized"})
-	})
+  goHandler.GET("/example-get", func(ctx *handler.Context) interface{} {
+    return ctx.Unauthorized(&handler.Error{Description: "Not authorized"})
+  })
 
-	goHandler.POST("/example-post", func(ctx *handler.Context) interface{} {
-		return ctx.Created("Hello, POST!")
-	})
+  goHandler.POST("/example-post", func(ctx *handler.Context) interface{} {
+    return ctx.Created("Hello, POST!")
+  })
 
-	goHandler.REST("/example-rest", func(ctx *handler.Context) interface{} {
-		return handler.REST(&rest, ctx)
-	})
+  goHandler.REST("/example-rest", func(ctx *handler.Context) interface{} {
+    return handler.REST(&rest, ctx)
+  })
 
-	log.Fatal(goHandler.Serve(8080))
+  log.Fatal(goHandler.Serve(8080))
 }
 ```
 ## Use standard middleware
 ```
 goHandler.REST("/example-rest", func(ctx *handler.Context) {
-		handler.REST(&rest, ctx)
+  handler.REST(&rest, ctx)
 }, handler.JSONify)
 ```
 ## Accessing database
 ```
-// Connect to database
-handler.GormAdd("default", handler.NewGormProp("147.139.139.200", "6044", "remote", "kucinglucu", "pos", "mysql"))
+// Connect to database (supported driver: mysql, postgres, mssql
+handler.GormAdd("default", handler.NewGormProp("localhos", "3306", "userdb", "password", "dbname", "driver"))
 
 // Get gorm object 
 // This object is just *gorm.DB object with default 
