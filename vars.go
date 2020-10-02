@@ -79,6 +79,18 @@ const (
 var (
 	gormDBs  map[string]*gorm.DB      = make(map[string]*gorm.DB)
 	redisDBs map[string]*redis.Client = make(map[string]*redis.Client)
+	// errMethodNotAllowed Error                    = Error{
+	// 	Description: MessageMethodNotAllowed,
+	// }
+	errNotImplemented Error = Error{
+		Description: MessageNotImplemented,
+	}
+	errNotFound Error = Error{
+		Description: MessageNotFound,
+	}
+	errPageNotFound Error = Error{
+		Description: MessagePageNotFound,
+	}
 )
 
 // public variables

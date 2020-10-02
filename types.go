@@ -44,19 +44,19 @@ func (u URLQuery) Validate() error {
 
 // GormProp struct for database connection
 type GormProp struct {
-	Host             string
-	Port             string
-	User             string
-	Pass             string
-	Database         string
-	Driver           string
-	ConnectionString string
+	host             string
+	port             string
+	user             string
+	pass             string
+	database         string
+	driver           string
+	connectionString string
 }
 
 // RedisProp struct for cached connection
 type RedisProp struct {
-	Host     string
-	Port     string
-	Pass     string
-	Database int
+	host     string
+	port     string
+	pass     string
+	database int
 }

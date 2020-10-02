@@ -1,12 +1,12 @@
 # go-handler
-This handler use gorilla mux structs as default router.
+This handler use [gorilla mux](https://github.com/gorilla/mux) structs as default router and [gorm](https://github.com/jinzhu/gorm) as default ORM
 
 # How to use
 - Set enviroment variable ERROR_IMAGE with value /path/to/error/image.png (default is a blank white rectangle)
-- Create log directory in your project directory. The log file will write in *.log
+- Create log directory in your project directory. The log file will be written in *.log (if log directory is not exist it will created automatically by logger func)
 
 # Example
-## Map RESTful routes
+## Routing
 ```
 package main
 
@@ -21,20 +21,20 @@ type testRest struct {
 	handler.Context
 }
 
-func (t *testRest) Get() {
-	t.Success("Hello, REST Get!")
+func (t *testRest) Get() interface{} {
+	return t.Success("Hello, REST Get!")
 }
 
-func (t *testRest) Post() {
-	t.Success("Hello, REST Post!")
+func (t *testRest) Post() interface{} {
+	return t.Success("Hello, REST Post!")
 }
 
-func (t *testRest) GetID(id string) {
-	t.Success(fmt.Sprintf("Hellon, GET ID %s", id))
+func (t *testRest) GetID(id string) interface{} {
+	return t.Success(fmt.Sprintf("Hellon, GET ID %s", id))
 }
 
-func (t *testRest) PutID(id string) {
-	t.Success(fmt.Sprintf("Hellon, PUT ID %s", id))
+func (t *testRest) PutID(id string) interface{} {
+	return t.Success(fmt.Sprintf("Hellon, PUT ID %s", id))
 }
 
 func main() {
@@ -43,18 +43,18 @@ func main() {
 		rest      testRest
 	)
 
-	goHandler = handler.New(handler.JSONfy)
+	goHandler = handler.New(handler.JSONify, handler.Logging)
 
-	goHandler.GET("/example-get", func(ctx *handler.Context) {
-		ctx.Success("Hello, GET!")
+	goHandler.GET("/example-get", func(ctx *handler.Context) interface{} {
+		return ctx.Unauthorized(&handler.Error{Description: "Not authorized"})
 	})
 
-	goHandler.POST("/example-post", func(ctx *handler.Context) {
-		ctx.Created("Hello, POST!")
+	goHandler.POST("/example-post", func(ctx *handler.Context) interface{} {
+		return ctx.Created("Hello, POST!")
 	})
 
-	goHandler.REST("/example-rest", func(ctx *handler.Context) {
-		handler.REST(&rest, ctx)
+	goHandler.REST("/example-rest", func(ctx *handler.Context) interface{} {
+		return handler.REST(&rest, ctx)
 	})
 
 	log.Fatal(goHandler.Serve(8080))
@@ -65,4 +65,14 @@ func main() {
 goHandler.REST("/example-rest", func(ctx *handler.Context) {
 		handler.REST(&rest, ctx)
 }, handler.JSONify)
+```
+## Accessing database
+```
+// Connect to database
+handler.GormAdd("default", handler.NewGormProp("147.139.139.200", "6044", "remote", "kucinglucu", "pos", "mysql"))
+
+// Get gorm object 
+// This object is just *gorm.DB object with default 
+// read office documentation for more information.
+db := handler.GormGet("default")
 ```

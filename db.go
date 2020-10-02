@@ -8,31 +8,35 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
+
+	_ "github.com/jinzhu/gorm/dialects/mssql"    // driver for mssql
+	_ "github.com/jinzhu/gorm/dialects/mysql"    // driver for mysql
+	_ "github.com/jinzhu/gorm/dialects/postgres" // driver for postgres
 )
 
 // NewGormProp returns new database property
 func NewGormProp(host, port, user, pass, db, driver string) *GormProp {
 	prop := &GormProp{
-		Host:     host,
-		Port:     port,
-		User:     user,
-		Pass:     pass,
-		Database: db,
-		Driver:   driver,
+		host:     host,
+		port:     port,
+		user:     user,
+		pass:     pass,
+		database: db,
+		driver:   driver,
 	}
 
-	switch prop.Driver {
+	switch prop.driver {
 	case "mysql":
-		prop.ConnectionString = fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-			prop.User, prop.Pass, prop.Host, prop.Port, prop.Database)
+		prop.connectionString = fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+			prop.user, prop.pass, prop.host, prop.port, prop.database)
 		// host=myhost port=myport user=gorm dbname=gorm password=mypassword
 	case "postgres":
-		prop.ConnectionString = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
-			prop.Host, prop.Port, prop.User, prop.Database, prop.Pass)
+		prop.connectionString = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
+			prop.host, prop.port, prop.user, prop.database, prop.pass)
 	// sqlserver://username:password@localhost:1433?database=dbname
 	case "mssql":
-		prop.ConnectionString = fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s",
-			prop.User, prop.Pass, prop.Host, prop.Port, prop.Database)
+		prop.connectionString = fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s",
+			prop.user, prop.pass, prop.host, prop.port, prop.database)
 	case "sqlite3":
 	default:
 		log.Fatalf("%s is not a database dialect.", driver)
@@ -41,12 +45,22 @@ func NewGormProp(host, port, user, pass, db, driver string) *GormProp {
 	return prop
 }
 
+// NewRedisProp returns new database property
+func NewRedisProp(host, port, user, pass string, db int) *RedisProp {
+	return &RedisProp{
+		host:     host,
+		port:     port,
+		pass:     pass,
+		database: db,
+	}
+}
+
 // GormAdd connects and returns specific gorm connection
 func GormAdd(alias string, prop *GormProp) *gorm.DB {
 	GormProps[alias] = prop
 	if gormDBs[alias] == nil {
 		var err error
-		gormDBs[alias], err = gorm.Open(prop.Driver, prop.ConnectionString)
+		gormDBs[alias], err = gorm.Open(prop.driver, prop.connectionString)
 
 		if err != nil {
 			errs := &Error{
@@ -77,9 +91,9 @@ func GormGet(alias string) *gorm.DB {
 func RedisAdd(alias string, prop *RedisProp) *redis.Client {
 	if redisDBs[alias] == nil {
 		redisDBs[alias] = redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%s", prop.Host, prop.Port),
-			Password: prop.Pass,
-			DB:       prop.Database,
+			Addr:     fmt.Sprintf("%s:%s", prop.host, prop.port),
+			Password: prop.pass,
+			DB:       prop.database,
 		})
 	}
 

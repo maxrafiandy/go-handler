@@ -6,28 +6,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var (
-	errMethodNotAllowed Error = Error{
-		Description: MessageMethodNotAllowed,
-	}
-)
-
 // RestHandlers interface
 type RestHandlers interface {
-	Post()
-	Get()
-	GetID(string)
-	Put()
-	PutID(string)
-	Patch()
-	PatchID(string)
-	Delete()
-	DeleteID(string)
+	Post() interface{}
+	Get() interface{}
+	GetID(string) interface{}
+	Put() interface{}
+	PutID(string) interface{}
+	Patch() interface{}
+	PatchID(string) interface{}
+	Delete() interface{}
+	DeleteID(string) interface{}
 	reset(http.ResponseWriter, *http.Request)
 }
 
 // REST maps router to appropriate methods
-func REST(rest RestHandlers, ctx *Context) {
+func REST(rest RestHandlers, ctx *Context) interface{} {
 	id, withid := mux.Vars(ctx.Request)[id]
 
 	rest.reset(ctx.Writer, ctx.Request)
@@ -35,30 +29,28 @@ func REST(rest RestHandlers, ctx *Context) {
 	if !withid { // route to /
 		switch ctx.Request.Method {
 		case get:
-			rest.Get()
+			return rest.Get()
 		case post:
-			rest.Post()
+			return rest.Post()
 		case put:
-			rest.Put()
+			return rest.Put()
 		case patch:
-			rest.Patch()
+			return rest.Patch()
 		case delete:
-			rest.Delete()
-		default:
-			response(ctx.Writer, MessageMethodNotAllowed, nil, http.StatusMethodNotAllowed)
+			return rest.Delete()
 		}
 	} else { // route to /{id:[0-9]+}
 		switch ctx.Request.Method {
 		case get:
-			rest.GetID(id)
+			return rest.GetID(id)
 		case put:
-			rest.PutID(id)
+			return rest.PutID(id)
 		case patch:
-			rest.PatchID(id)
+			return rest.PatchID(id)
 		case delete:
-			rest.DeleteID(id)
-		default:
-			response(ctx.Writer, MessageMethodNotAllowed, nil, http.StatusMethodNotAllowed)
+			return rest.DeleteID(id)
 		}
 	}
+	// this line may never reached
+	return &Error{Description: "REST EOF!"}
 }

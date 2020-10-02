@@ -155,11 +155,13 @@ func DecodeURLQuery(w http.ResponseWriter, v url.Values) (URLQuery, bool) {
 	return args, true
 }
 
-func response(w http.ResponseWriter, message string, data interface{}, status int) {
+func response(w http.ResponseWriter, message string, data interface{}, status int) interface{} {
 	w.WriteHeader(status)
 	encoder := json.NewEncoder(w)
 	response := Response{Message: message, Data: data}
 	encoder.Encode(response)
-
 	Logger(response)
+
+	// return data
+	return data
 }

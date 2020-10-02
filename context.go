@@ -20,13 +20,14 @@ type (
 	// Context context
 	Context struct {
 		handlers map[string]ContextFunc
+		result   interface{}
 		Router   *mux.Router
 		Writer   http.ResponseWriter
 		Request  *http.Request
 	}
 
 	// ContextFunc func
-	ContextFunc func(*Context)
+	ContextFunc func(*Context) interface{}
 )
 
 // New create new Context
@@ -39,9 +40,11 @@ func New(middlewares ...mux.MiddlewareFunc) *Context {
 	h.handlers = make(map[string]ContextFunc)
 	contextPool.New = func() interface{} {
 		return &Context{
+			Router:   nil,
 			Writer:   nil,
 			Request:  nil,
 			handlers: nil,
+			result:   nil,
 		}
 	}
 	return h
@@ -53,13 +56,17 @@ func (c *Context) Serve(port int) error {
 }
 
 // HandlerFunc exec request
-func (f ContextFunc) HandlerFunc(w http.ResponseWriter, r *http.Request) {
+func (f ContextFunc) HandlerFunc(w http.ResponseWriter, r *http.Request) interface{} {
 	ctx := contextPool.Get().(*Context)
 	defer contextPool.Put(ctx)
 
 	ctx.Writer = w
 	ctx.Request = r
-	f(ctx)
+	ctx.result = f(ctx)
+
+	fmt.Printf("Handler result: %v", ctx.result)
+
+	return ctx.result
 }
 
 // ServeHTTP calls f(w, r).
@@ -120,101 +127,106 @@ func (c *Context) DELETE(path string, ctx ContextFunc, middlewares ...mux.Middle
 }
 
 // Get implements Get() function
-func (c *Context) Get() {
-	c.MethodNotAllowed()
+func (c *Context) Get() interface{} {
+	return c.MethodNotAllowed()
 }
 
 // GetID implements GetID() function
-func (c *Context) GetID(id string) {
-	c.MethodNotAllowed()
+func (c *Context) GetID(id string) interface{} {
+	return c.MethodNotAllowed()
 }
 
 // Post implements Post() function
-func (c *Context) Post() {
-	c.MethodNotAllowed()
+func (c *Context) Post() interface{} {
+	return c.MethodNotAllowed()
 }
 
 // PutID implements Put() function
-func (c *Context) PutID(id string) {
-	c.MethodNotAllowed()
+func (c *Context) PutID(id string) interface{} {
+	return c.MethodNotAllowed()
 }
 
 // Put implements Put() function
-func (c *Context) Put() {
-	c.MethodNotAllowed()
+func (c *Context) Put() interface{} {
+	return c.MethodNotAllowed()
 }
 
 // PatchID implements PatchID() function
-func (c *Context) PatchID(id string) {
-	c.MethodNotAllowed()
+func (c *Context) PatchID(id string) interface{} {
+	return c.MethodNotAllowed()
 }
 
 // Patch implements Patch() function
-func (c *Context) Patch() {
-	c.MethodNotAllowed()
+func (c *Context) Patch() interface{} {
+	return c.MethodNotAllowed()
 }
 
 // DeleteID implements DeleteID() function
-func (c *Context) DeleteID(id string) {
-	c.MethodNotAllowed()
+func (c *Context) DeleteID(id string) interface{} {
+	return c.MethodNotAllowed()
 }
 
 // Delete implements Delete() function
-func (c *Context) Delete() {
-	c.MethodNotAllowed()
+func (c *Context) Delete() interface{} {
+	return c.MethodNotAllowed()
 }
 
 // Created send success response with result data
-func (c *Context) Created(data interface{}) {
-	response(c.Writer, MessageCreated, data, http.StatusCreated)
+func (c *Context) Created(data interface{}) interface{} {
+	return response(c.Writer, MessageCreated, data, http.StatusCreated)
 }
 
 // Success send success response with result data
-func (c *Context) Success(data interface{}) {
-	response(c.Writer, MessageOK, data, http.StatusOK)
+func (c *Context) Success(data interface{}) interface{} {
+	return response(c.Writer, MessageOK, data, http.StatusOK)
 }
 
 // NoContent send success response without any content
-func (c *Context) NoContent() {
-	response(c.Writer, MessageNoContent, nil, http.StatusNoContent)
+func (c *Context) NoContent() interface{} {
+	return response(c.Writer, MessageNoContent, nil, http.StatusNoContent)
 }
 
 // BadRequest send general 400-bad request
-func (c *Context) BadRequest(data error) {
-	response(c.Writer, MessageBadRequest, data, http.StatusBadRequest)
+func (c *Context) BadRequest(data error) interface{} {
+	return response(c.Writer, MessageBadRequest, data, http.StatusBadRequest)
 }
 
 // NotFound send general 200-Succes withoud data.
 // this method is equal to PageNotFound() and usually
 // used when record was not found in collection instead of
 // return a page not found message
-func (c *Context) NotFound() {
-	response(c.Writer, MessageNotFound, nil, http.StatusOK)
+func (c *Context) NotFound() interface{} {
+	return response(c.Writer, MessageNotFound, errNotFound, http.StatusOK)
 }
 
 // PageNotFound send general 404-not found.
 // this method is equal to NotFound() but returns
 // page not found message
-func (c *Context) PageNotFound() {
-	response(c.Writer, MessagePageNotFound, nil, http.StatusNotFound)
+func (c *Context) PageNotFound() interface{} {
+	return response(c.Writer, MessagePageNotFound, errPageNotFound, http.StatusNotFound)
 }
 
 // InternalServerError send general 500-interal server error
-func (c *Context) InternalServerError(data error) {
-	response(c.Writer, MessageInternalServerError, data, http.StatusInternalServerError)
+func (c *Context) InternalServerError(data error) interface{} {
+	return response(c.Writer, MessageInternalServerError, data, http.StatusInternalServerError)
 }
 
 // Unauthorized send general 401-unautirized
-func (c *Context) Unauthorized(data error) {
-	response(c.Writer, MessageUnauthorized, data, http.StatusUnauthorized)
+func (c *Context) Unauthorized(data error) interface{} {
+	return response(c.Writer, MessageUnauthorized, data, http.StatusUnauthorized)
 }
 
 // Forbidden send general 403-forbidden
-func (c *Context) Forbidden(data error) {
-	response(c.Writer, MessageForbidden, data, http.StatusForbidden)
+func (c *Context) Forbidden(data error) interface{} {
+	return response(c.Writer, MessageForbidden, data, http.StatusForbidden)
 }
 
 // MethodNotAllowed send general 405-Method not allowed
-func (c *Context) MethodNotAllowed() {
-	response(c.Writer, MessageMethodNotAllowed, nil, http.StatusMethodNotAllowed)
+func (c *Context) MethodNotAllowed() interface{} {
+	return response(c.Writer, MessageMethodNotAllowed, nil, http.StatusMethodNotAllowed)
+}
+
+// NotImplemented send general 405-Method not allowed
+func (c *Context) NotImplemented() interface{} {
+	return response(c.Writer, MessageNotImplemented, errNotImplemented, http.StatusNotImplemented)
 }
