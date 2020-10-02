@@ -8,60 +8,61 @@ This handler use gorilla mux structs as default router.
 # Example
 ## Map RESTful routes
 ```
-func Route() *mux.Router{
-    // create new mux.Router
-    r := handler.NewRouter()
+package main
 
-    // create route to /example 
-    // this route can now accesses with some http verbs: 
-    // GET http://localhost:<port>/example
-    // POST http://localhost:<port>/example
-    // PUT http://localhost:<port>/example
-    // PATCH http://localhost:<port>/example
-    // DELETE http://localhost:<port>/example
-    // GET http://localhost:<port>/example/{id}
-    // PUT http://localhost:<port>/example/{id}
-    // PATCH http://localhost:<port>/example/{id}
-    // DELETE http://localhost:<port>/example/{id}
-    sub := handler.Groupr("/example", &example{})
+import (
+	"fmt"
+	"log"
 
-    return r
+	"github.com/maxrafiandy/go-handler"
+)
+
+type testRest struct {
+	handler.Context
 }
 
-type example struct {
-    handler.RestContext
+func (t *testRest) Get() {
+	t.Success("Hello, REST Get!")
 }
 
-func (rest example) Handler(w http.ResponseWriter, r *http.Request) {
-	rest.Writer = w
-	rest.Request = r
-	handler.MapRest(rest, w, r)
+func (t *testRest) Post() {
+	t.Success("Hello, REST Post!")
 }
 
-func (rest example) Get() {
-    // go get stuff here
+func (t *testRest) GetID(id string) {
+	t.Success(fmt.Sprintf("Hellon, GET ID %s", id))
 }
 
-func (rest example) Post() {
-    // go post stuff here
+func (t *testRest) PutID(id string) {
+	t.Success(fmt.Sprintf("Hellon, PUT ID %s", id))
 }
 
-func (rest example) GetID(id string) {
-    // go get /{id} stuff here
+func main() {
+	var (
+		goHandler *handler.Context
+		rest      testRest
+	)
+
+	goHandler = handler.New(handler.JSONfy)
+
+	goHandler.GET("/example-get", func(ctx *handler.Context) {
+		ctx.Created("Hello, GET!")
+	})
+
+	goHandler.POST("/example-post", func(ctx *handler.Context) {
+		ctx.Unauthorized("Hello, POST!")
+	})
+
+	goHandler.REST("/example-rest", func(ctx *handler.Context) {
+		handler.REST(&rest, ctx)
+	})
+
+	log.Fatal(goHandler.Serve(8080))
 }
 ```
 ## Use standard middleware
 ```
-func Route() *mux.Router{
-    // create new mux.Router
-    r := handler.NewRouter()
-
-    // user jsonfy middleware to decode to json
-    r.Use(handler.JSONfy)
-
-    // create route to /example 
-    sub := handler.Groupr("/example", &example{})
-
-    return r
-}
+goHandler.REST("/example-rest", func(ctx *handler.Context) {
+		handler.REST(&rest, ctx)
+}, handler.JSONfy)
 ```

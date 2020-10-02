@@ -67,56 +67,101 @@ func (f ContextFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.HandlerFunc(w, r)
 }
 
-func (c *Context) add(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
-	sub := c.Router
-
-	for _, middleware := range middlewares {
-		sub.Use(middleware)
-	}
-
-	c.handlers[method+path] = ctx
-	sub.Handle(path, c.handlers[method+path]).Methods(method)
+func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
+	c.Writer = w
+	c.Request = r
 }
 
-func (c *Context) rest(method, path string, rest RestHandlers, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
-	sub := c.Router
-
-	for _, middleware := range middlewares {
-		sub.Use(middleware)
-	}
-
+func (c *Context) add(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
+	c.Router.Use(middlewares...)
 	c.handlers[method+path] = ctx
-	sub.Handle(path, c.handlers[method+path])
+}
+
+func (c *Context) addRoute(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
+	c.add(method, path, ctx, middlewares)
+	c.Router.Handle(path, c.handlers[method+path]).Methods(method)
+}
+
+func (c *Context) addRest(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
+	c.add(method, path, ctx, middlewares)
+	sub := Group(path, c.Router)
+	sub.Handle(index, c.handlers[method+path]).Methods(get, post, put, delete, patch)
+	sub.Handle(subID, c.handlers[method+path]).Methods(get, put, patch, delete)
 }
 
 // REST http request
-func (c *Context) REST(path string, rest RestHandlers, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
-	c.rest("rest", path, rest, ctx, middlewares)
+func (c *Context) REST(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
+	c.addRest(restful, path, ctx, middlewares)
 }
 
 // GET http request
 func (c *Context) GET(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
-	c.add(get, path, ctx, middlewares)
+	c.addRoute(get, path, ctx, middlewares)
 }
 
 // POST http request
 func (c *Context) POST(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
-	c.add(post, path, ctx, middlewares)
+	c.addRoute(post, path, ctx, middlewares)
 }
 
 // PUT http request
 func (c *Context) PUT(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
-	c.add(put, path, ctx, middlewares)
+	c.addRoute(put, path, ctx, middlewares)
 }
 
 // PATCH http request
 func (c *Context) PATCH(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
-	c.add(patch, path, ctx, middlewares)
+	c.addRoute(patch, path, ctx, middlewares)
 }
 
 // DELETE http request
 func (c *Context) DELETE(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
-	c.add(delete, path, ctx, middlewares)
+	c.addRoute(delete, path, ctx, middlewares)
+}
+
+// Get implements Get() function
+func (c *Context) Get() {
+	c.MethodNotAllowed()
+}
+
+// GetID implements GetID() function
+func (c *Context) GetID(id string) {
+	c.MethodNotAllowed()
+}
+
+// Post implements Post() function
+func (c *Context) Post() {
+	c.MethodNotAllowed()
+}
+
+// PutID implements Put() function
+func (c *Context) PutID(id string) {
+	c.MethodNotAllowed()
+}
+
+// Put implements Put() function
+func (c *Context) Put() {
+	c.MethodNotAllowed()
+}
+
+// PatchID implements PatchID() function
+func (c *Context) PatchID(id string) {
+	c.MethodNotAllowed()
+}
+
+// Patch implements Patch() function
+func (c *Context) Patch() {
+	c.MethodNotAllowed()
+}
+
+// DeleteID implements DeleteID() function
+func (c *Context) DeleteID(id string) {
+	c.MethodNotAllowed()
+}
+
+// Delete implements Delete() function
+func (c *Context) Delete() {
+	c.MethodNotAllowed()
 }
 
 // Created send success response with result data
@@ -129,7 +174,7 @@ func (c *Context) Success(data interface{}) {
 	response(c.Writer, MessageOK, data, http.StatusOK)
 }
 
-// Success send success response with result data
+// NoContent send success response without any content
 func (c *Context) NoContent() {
 	response(c.Writer, MessageNoContent, nil, http.StatusNoContent)
 }
@@ -139,12 +184,17 @@ func (c *Context) BadRequest(data error) {
 	response(c.Writer, MessageBadRequest, data, http.StatusBadRequest)
 }
 
-// NotFound send general 200-OK withoud data
+// NotFound send general 200-Succes withoud data.
+// this method is equal to PageNotFound() and usually
+// used when record was not found in collection instead of
+// return a page not found message
 func (c *Context) NotFound() {
 	response(c.Writer, MessageNotFound, nil, http.StatusOK)
 }
 
-// PageNotFound send general 404-Page not found
+// PageNotFound send general 404-not found.
+// this method is equal to NotFound() but returns
+// page not found message
 func (c *Context) PageNotFound() {
 	response(c.Writer, MessagePageNotFound, nil, http.StatusNotFound)
 }
@@ -159,7 +209,12 @@ func (c *Context) Unauthorized(data error) {
 	response(c.Writer, MessageUnauthorized, nil, http.StatusUnauthorized)
 }
 
-// Forbidden send general 405-forbidden
+// Forbidden send general 403-forbidden
 func (c *Context) Forbidden(data error) {
 	response(c.Writer, MessageForbidden, data, http.StatusForbidden)
+}
+
+// MethodNotAllowed send general 405-Method not allowed
+func (c *Context) MethodNotAllowed() {
+	response(c.Writer, MessageMethodNotAllowed, nil, http.StatusMethodNotAllowed)
 }

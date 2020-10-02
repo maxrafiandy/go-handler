@@ -29,10 +29,7 @@ type MethodNotAllowed405 struct{}
 // ServeHTTP impementation of PageNotFound404
 func (e PageNotFound404) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(contentType, "application/json")
-	w.Header().Set(contentSecurityPolicy, "default-src 'self'")
-	w.Header().Set(strictTransportSecurity, "max-age=31536000")
 	w.WriteHeader(http.StatusNotFound)
-
 	encoder := json.NewEncoder(w)
 	encoder.Encode(&Response{Message: MessagePageNotFound, Data: nil})
 }
@@ -40,10 +37,7 @@ func (e PageNotFound404) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // ServeHTTP impementation of MethodNotAllowed405
 func (e MethodNotAllowed405) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(contentType, "application/json")
-	w.Header().Set(contentSecurityPolicy, "default-src 'self'")
-	w.Header().Set(strictTransportSecurity, "max-age=31536000")
 	w.WriteHeader(http.StatusMethodNotAllowed)
-
 	encoder := json.NewEncoder(w)
 	encoder.Encode(&Response{Message: MessageMethodNotAllowed, Data: nil})
 }
@@ -55,14 +49,14 @@ func Group(path string, parent *mux.Router) *mux.Router {
 
 // Groupr create new sub router of path
 // with default restful router
-func Groupr(path string, parent *mux.Router, c Restful) *mux.Router {
-	sub := Group(path, parent)
+// func Groupr(path string, parent *mux.Router, c Restful) *mux.Router {
+// 	sub := Group(path, parent)
 
-	sub.HandleFunc(index, c.Handler).Methods(get, post, put, delete, patch)
-	sub.HandleFunc(subID, c.Handler).Methods(get, put, patch, delete)
+// 	sub.HandleFunc(index, c.Handler).Methods(get, post, put, delete, patch)
+// 	sub.HandleFunc(subID, c.Handler).Methods(get, put, patch, delete)
 
-	return sub
-}
+// 	return sub
+// }
 
 // Groupd handle 3 routes: today, singledate, rangedate
 func Groupd(path string, r *mux.Router, handler http.HandlerFunc) {

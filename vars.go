@@ -21,12 +21,13 @@ const (
 	index string = ""
 	subID string = "/{id}"
 
-	id     string = "id"
-	get    string = "GET"
-	post   string = "POST"
-	put    string = "PUT"
-	patch  string = "PATCH"
-	delete string = "DELETE"
+	id      string = "id"
+	get     string = "GET"
+	post    string = "POST"
+	put     string = "PUT"
+	patch   string = "PATCH"
+	delete  string = "DELETE"
+	restful string = "rest"
 )
 
 // exported constants
