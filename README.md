@@ -44,16 +44,33 @@ func main() {
     rest      testRest
   )
 
+  // Create new handler object
   goHandler = handler.New(handler.JSONify, handler.Logging)
 
+  // route to http://host:port/example-get
+  // curl -X GET http://host:port/example-get
   goHandler.GET("/example-get", func(ctx *handler.Context) interface{} {
     return ctx.Unauthorized(&handler.Error{Description: "Not authorized"})
   })
 
+  // route to http://host:port/example-post
+  // curl -X POST http://host:port/example-post
   goHandler.POST("/example-post", func(ctx *handler.Context) interface{} {
     return ctx.Created("Hello, POST!")
   })
 
+  // route to http://host:port/example-rest with multiple http methods
+  // curl -X GET http://host:port/example-rest
+  // curl -X POST http://host:port/example-rest
+  // curl -X PUT http://host:port/example-rest
+  // curl -X PATCH http://host:port/example-rest
+  // curl -X DELETE http://host:port/example-rest
+  // curl -X GET http://host:port/example-rest/{id}
+  // curl -X PUT http://host:port/example-rest/{id}
+  // curl -X PATCH http://host:port/example-rest/{id}
+  // curl -X DELETE http://host:port/example-rest/{id}
+  // if you don't override/implement handler.RestfulHandlers interface
+  // it will simply return method not allowed
   goHandler.REST("/example-rest", func(ctx *handler.Context) interface{} {
     return handler.REST(&rest, ctx)
   })
@@ -63,8 +80,9 @@ func main() {
 ```
 ## Use standard middleware
 ```
-goHandler.REST("/example-rest", func(ctx *handler.Context) {
-  handler.REST(&rest, ctx)
+// add JSONify middleware to all http verbs of /example-rest
+goHandler.REST("/example-rest", func(ctx *handler.Context) interface{} {
+  return handler.REST(&rest, ctx)
 }, handler.JSONify)
 ```
 ## Accessing database
