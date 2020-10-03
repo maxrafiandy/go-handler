@@ -49,7 +49,7 @@ func NewGormProp(host, port, user, pass, db, driver string) *GormProp {
 }
 
 // NewRedisProp returns new database property
-func NewRedisProp(host, port, user, pass string, db int) *RedisProp {
+func NewRedisProp(host, port, pass string, db int) *RedisProp {
 	return &RedisProp{
 		host:     host,
 		port:     port,
