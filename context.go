@@ -1,11 +1,16 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
+	"mime/multipart"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
+	"github.com/urfave/negroni"
 )
 
 var (
@@ -55,13 +60,19 @@ func (c *Context) Serve(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), c.Router)
 }
 
-// HandlerFunc exec request
+// ServeWithNegroni call http.ListenAndServe with default negroni classic middleware
+func (c *Context) ServeWithNegroni(port int) error {
+	n := negroni.Classic()
+	n.UseHandler(c.Router)
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), n)
+}
+
+// HandlerFunc execute request chain
 func (f ContextFunc) HandlerFunc(w http.ResponseWriter, r *http.Request) interface{} {
 	ctx := contextPool.Get().(*Context)
 	defer contextPool.Put(ctx)
 
-	ctx.Writer = w
-	ctx.Request = r
+	ctx.reset(w, r)
 	ctx.result = f(ctx)
 
 	fmt.Printf("Handler result: %v", ctx.result)
@@ -96,77 +107,170 @@ func (c *Context) addRest(method, path string, ctx ContextFunc, middlewares []mu
 	sub.Handle(subID, c.handlers[method+path]).Methods(get, put, patch, delete)
 }
 
-// REST http request
+// REST map request as http RESTful resource
 func (c *Context) REST(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRest(restful, path, ctx, middlewares)
 }
 
-// GET http request
+// GET handle http GET request
 func (c *Context) GET(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRoute(get, path, ctx, middlewares)
 }
 
-// POST http request
+// POST handle http POST request
 func (c *Context) POST(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRoute(post, path, ctx, middlewares)
 }
 
-// PUT http request
+// PUT handle http PUT request
 func (c *Context) PUT(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRoute(put, path, ctx, middlewares)
 }
 
-// PATCH http request
+// PATCH handle http PATCH request
 func (c *Context) PATCH(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRoute(patch, path, ctx, middlewares)
 }
 
-// DELETE http request
+// DELETE handle http DELETE request
 func (c *Context) DELETE(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRoute(delete, path, ctx, middlewares)
 }
 
-// Get implements Get() function
+// FormData parse the incoming POST body into "form" struct
+// handle application/json and application/x-www-form-urlencoded
+// and multipart/form-data
+func (c *Context) FormData(form interface{}) error {
+	contentType := c.Request.Header.Get(contentType)
+
+	if strings.Contains(contentType, "application/json") {
+		decoder := json.NewDecoder(c.Request.Body)
+		decoder.Decode(form)
+		return nil
+	} else if strings.Contains(contentType, "application/x-www-form-urlencoded") {
+		c.Request.ParseForm()
+		decoder := schema.NewDecoder()
+		decoder.Decode(form, c.Request.Form)
+		return nil
+	} else if strings.Contains(contentType, "multipart/form-data") {
+		c.Request.ParseMultipartForm(defaultMaxMemory)
+		decoder := schema.NewDecoder()
+		decoder.Decode(form, c.Request.Form)
+		return nil
+	} else {
+		custError := &Error{
+			Description: invalidContentType,
+		}
+		Logger(custError)
+		return custError
+	}
+}
+
+// FormFile returns the first file for the provided form key.
+// FormFile calls ParseMultipartForm and ParseForm if necessary.
+func (c *Context) FormFile(field string) (multipart.File, *multipart.FileHeader, error) {
+	return c.Request.FormFile(field)
+}
+
+// PostFormValue returns the first value for the named component of the POST,
+// PATCH, or PUT request body. URL query parameters are ignored.
+// PostFormValue calls ParseMultipartForm and ParseForm if necessary and ignores
+// any errors returned by these functions.
+// If key is not present, PostFormValue returns the empty string.
+func (c *Context) PostFormValue(key string) string {
+	if c.Request.PostForm == nil {
+		c.Request.ParseMultipartForm(defaultMaxMemory)
+	}
+	if vs := c.Request.PostForm[key]; len(vs) > 0 {
+		return vs[0]
+	}
+	return ""
+}
+
+// PostFormValues returns the all value for the named component of the POST,
+// PATCH, or PUT request body. URL query parameters are ignored.
+// PostFormValue calls ParseMultipartForm and ParseForm if necessary and ignores
+// any errors returned by these functions.
+// If key is not present, PostFormValue returns the empty array.
+func (c *Context) PostFormValues(key string) []string {
+	if c.Request.PostForm == nil {
+		c.Request.ParseMultipartForm(defaultMaxMemory)
+	}
+	return c.Request.PostForm[key]
+}
+
+// DecodeURLQuery parse the incoming URL query into struct Urlq.
+// Returns true if everyting went well, otherwise false.
+func (c *Context) DecodeURLQuery() (urlQuery URLQuery, err error) {
+	// get url's query
+	decoder := schema.NewDecoder()
+	decoder.Decode(&urlQuery, c.Request.URL.Query())
+	if err := urlQuery.Validate(); err != nil {
+		return urlQuery, err
+	}
+
+	return urlQuery, nil
+}
+
+// Get implements Get() of RestHandlers
+// Returns 405-Not allowed if derivied RestHandlers
+// object does not override Get() function
 func (c *Context) Get() interface{} {
 	return c.MethodNotAllowed()
 }
 
-// GetID implements GetID() function
+// GetID implements GetID() of RestHandlers
+// Returns 405-Not allowed if derivied RestHandlers
+// object does not override GetID() function
 func (c *Context) GetID(id string) interface{} {
 	return c.MethodNotAllowed()
 }
 
-// Post implements Post() function
+// Post implements Post() of RestHandlers
+// Returns 405-Not allowed if derivied RestHandlers
+// object does not override Post() function
 func (c *Context) Post() interface{} {
 	return c.MethodNotAllowed()
 }
 
-// PutID implements Put() function
+// PutID implements PutID() of RestHandlers
+// Returns 405-Not allowed if derivied RestHandlers
+// object does not override PutID() function
 func (c *Context) PutID(id string) interface{} {
 	return c.MethodNotAllowed()
 }
 
-// Put implements Put() function
+// Put implements Put() of RestHandlers
+// Returns 405-Not allowed if derivied RestHandlers
+// object does not override Put() function
 func (c *Context) Put() interface{} {
 	return c.MethodNotAllowed()
 }
 
-// PatchID implements PatchID() function
+// PatchID implements PatchID() of RestHandlers
+// Returns 405-Not allowed if derivied RestHandlers
+// object does not override PatchID() function
 func (c *Context) PatchID(id string) interface{} {
 	return c.MethodNotAllowed()
 }
 
-// Patch implements Patch() function
+// Patch implements Patch() of RestHandlers
+// Returns 405-Not allowed if derivied RestHandlers
+// object does not override Patch() function
 func (c *Context) Patch() interface{} {
 	return c.MethodNotAllowed()
 }
 
-// DeleteID implements DeleteID() function
+// DeleteID implements DeleteID() of RestHandlers
+// Returns 405-Not allowed if derivied RestHandlers
+// object does not override DeleteID() function
 func (c *Context) DeleteID(id string) interface{} {
 	return c.MethodNotAllowed()
 }
 
-// Delete implements Delete() function
+// Delete implements Delete() of RestHandlers
+// Returns 405-Not allowed if derivied RestHandlers
+// object does not override Delete() function
 func (c *Context) Delete() interface{} {
 	return c.MethodNotAllowed()
 }
