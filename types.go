@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"regexp"
-
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 
@@ -19,6 +17,11 @@ type Error struct {
 	Errors      error  `json:"error,omitempty"`
 }
 
+// Validator interface
+type Validator interface {
+	Validate() error
+}
+
 // Error implementation of error interface
 func (e *Error) Error() string {
 	return e.Description
@@ -26,19 +29,21 @@ func (e *Error) Error() string {
 
 // URLQuery struct for Server Side Rendering
 type URLQuery struct {
-	ItemsPerPage string `schema:"items_per_page"`
-	Page         string `schema:"page"`
-	Keyword      string `schema:"keyword"`
+	ItemsPerPage string `schema:"items_per_page" json:"items_per_page"`
+	Page         string `schema:"page" json:"page"`
+	Keyword      string `schema:"keyword" json:"keyword,omitempty"`
+	StartDate    string `schema:"start_date" json:"start_date,omitempty"`
+	EndDate      string `schema:"end_date" json:"end_date,omitempty"`
 }
 
-// Validate funtion
+// Validate implements Validatior Validate
 func (u URLQuery) Validate() error {
-	isNumeric := regexp.MustCompile("^[0-9]+$")
-	isAlphanumeric := regexp.MustCompile("^[a-zA-Z0-9\\s.]+$")
 	return validation.ValidateStruct(&u,
-		validation.Field(&u.ItemsPerPage, validation.Match(isNumeric)),
-		validation.Field(&u.Page, validation.Match(isAlphanumeric)),
-		validation.Field(&u.Keyword, validation.Match(isAlphanumeric)),
+		validation.Field(&u.ItemsPerPage, isNumeric),
+		validation.Field(&u.Page, isNumeric),
+		validation.Field(&u.Keyword, isAlphaNum),
+		validation.Field(&u.StartDate, isDate),
+		validation.Field(&u.EndDate, isDate),
 	)
 }
 
