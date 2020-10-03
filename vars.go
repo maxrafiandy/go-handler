@@ -13,6 +13,7 @@ const (
 	imageJPG                string = "image/jpg"
 	imagePNG                string = "image/png"
 	invalidContentType      string = "Invalid content type"
+	invalidDateFormat       string = "Invalid date format"
 	decodeFail              string = "Unable to decode file content. The file format is not in jpg neither png"
 	noImagePath             string = "assets/no-image.png"
 	contentSecurityPolicy   string = "Content-Security-Policy"
@@ -82,9 +83,7 @@ const (
 var (
 	gormDBs  map[string]*gorm.DB      = make(map[string]*gorm.DB)
 	redisDBs map[string]*redis.Client = make(map[string]*redis.Client)
-	// errMethodNotAllowed Error                    = Error{
-	// 	Description: MessageMethodNotAllowed,
-	// }
+
 	errNotImplemented Error = Error{
 		Description: MessageNotImplemented,
 	}

@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
@@ -85,6 +88,70 @@ func GormAdd(alias string, prop *GormProp) *gorm.DB {
 // GormGet returns the "name" gorm connection
 func GormGet(alias string) *gorm.DB {
 	return gormDBs[alias].Set("gorm:auto_preload", true)
+}
+
+// Pagination set offset and limit of query.
+// Default value of limit is 10, and offset of page 1.
+func Pagination(db *gorm.DB, u URLQuery) *gorm.DB {
+	// set limit
+	nlimit := 10
+	if len(u.ItemsPerPage) != 0 {
+		n, _ := strconv.Atoi(u.ItemsPerPage)
+		nlimit = n
+	}
+	db = db.Limit(nlimit)
+
+	// set page offset
+	npage := 0
+	if len(u.Page) != 0 {
+		n, _ := strconv.Atoi(u.Page)
+		npage = (n - 1) * nlimit
+	}
+	db = db.Offset(npage)
+
+	return db
+}
+
+// DateRange set single date or range date.
+// if there are 2 dates passed from url - start_date and end_date -
+// it will return a between start_date and end_date. if it only pass
+// start_date then it return where date(column) = start_date,
+// otherwise date(column) = NOW()
+func DateRange(db *gorm.DB, vars URLQuery, column string) (*gorm.DB, error) {
+	var (
+		between    string = fmt.Sprintf("date(%s) = ?", column)
+		expression string = `^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$`
+		regexps    *regexp.Regexp
+		err        error = &Error{Description: invalidDateFormat}
+	)
+
+	checkValid := func(value string) bool {
+		regexps, _ = regexp.Compile(expression)
+		return regexps.MatchString(value)
+	}
+
+	switch {
+	// if start and end sets
+	case vars.StartDate != "" && vars.EndDate != "":
+		if !checkValid(vars.StartDate) || !checkValid(vars.EndDate) {
+			return db, err
+		}
+		between = fmt.Sprintf("date(%s) between ? and ?", column)
+		return db.Where(between, vars.StartDate, vars.EndDate), nil
+	case vars.StartDate != "":
+		if !checkValid(vars.StartDate) {
+			return db, err
+		}
+		return db.Where(between, vars.StartDate), nil
+	case vars.EndDate != "":
+		if !checkValid(vars.EndDate) {
+			return db, err
+		}
+		between = fmt.Sprintf("date(%s) between ? and ?", column)
+		return db.Where(between, time.Now().Format(formatDateYMD), vars.EndDate), nil
+	default:
+		return db.Where(between, time.Now().Format(formatDateYMD)), nil
+	}
 }
 
 // RedisAdd returns new client of redis host
