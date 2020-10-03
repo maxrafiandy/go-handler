@@ -85,6 +85,41 @@ goHandler.REST("/example-rest", func(ctx *handler.Context) interface{} {
   return handler.REST(&rest, ctx)
 }, handler.JSONify)
 ```
+## Adding sub router
+```
+// create api router with CSP middleware
+api := goHandler.SubRouter("/api/v1", handler.AddCSP)
+
+// route to /api/v1/example-post
+api.POST("/example-post", func(ctx *handler.Context) interface{} {
+  // do something
+  return ctx.Success("Hello, world!")
+})
+
+// route to /api/v1/example-get
+api.GET("/example-get", func(ctx *handler.Context) interface{} {
+  // do something
+  return ctx.Success("Hello, world!")
+})
+
+// create api router with CSP middleware
+public := goHandler.SubRouter("/public")
+
+// route to /public/example-get
+public.GET("/example-get", func(ctx *handler.Context) interface{} {
+  // do something
+  return ctx.Success("Hello, world!")
+})
+
+```
+## Getting URL variables
+```
+goHandler.GET("/example-get/{username}", func(ctx *handler.Context) interface{} {
+  result := fmt.Sprintf("Hello, %s!", ctx.Vars["username"])
+
+  return ctx.Success(result)
+}, handler.JSONify)
+```
 ## Accessing database
 ```
 // Connect to database (supported driver: mysql, postgres, mssql).
