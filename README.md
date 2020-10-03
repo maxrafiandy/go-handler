@@ -102,7 +102,7 @@ api.GET("/example-get", func(ctx *handler.Context) interface{} {
   return ctx.Success("Hello, world!")
 })
 
-// create api router with CSP middleware
+// create public router
 public := goHandler.SubRouter("/public")
 
 // route to /public/example-get
