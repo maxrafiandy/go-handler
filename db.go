@@ -119,11 +119,13 @@ func Pagination(db *gorm.DB, urlQuery URLQuery, dateColumn ...string) *gorm.DB {
 			between = fmt.Sprintf("%s between ? and ?", dateColumn[0])
 			return db.Where(between, urlQuery.StartDate, urlQuery.EndDate)
 		case urlQuery.StartDate != "":
+			between = fmt.Sprintf(between, dateColumn[0])
 			return db.Where(between, urlQuery.StartDate)
 		case urlQuery.EndDate != "":
 			between = fmt.Sprintf("%s between ? and ?", dateColumn[0])
 			return db.Where(between, time.Now().Format(formatDate), urlQuery.EndDate)
 		default:
+			between = fmt.Sprintf(between, dateColumn[0])
 			return db.Where(between, time.Now().Format(formatDate))
 		}
 	}
