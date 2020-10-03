@@ -42,7 +42,7 @@ func NewGormProp(host, port, user, pass, db, driver string) *GormProp {
 			prop.user, prop.pass, prop.host, prop.port, prop.database)
 	case "sqlite3":
 	default:
-		log.Fatalf("%s is not a database dialect.", driver)
+		log.Fatalf("[go-handler] %s is not a database dialect", driver)
 	}
 
 	return prop
@@ -66,12 +66,11 @@ func GormAdd(alias string, prop *GormProp) *gorm.DB {
 		gormDBs[alias], err = gorm.Open(prop.driver, prop.connectionString)
 
 		if err != nil {
-			errs := &Error{
+			err = &Error{
 				Description: err.Error(),
 				Errors:      err,
 			}
-			Logger(errs)
-			log.Fatal(errs)
+			log.Fatalf("[go-handler] fatal: %v", err.Error())
 		}
 
 		var debug string = os.Getenv("DEBUG_MODE")
@@ -115,13 +114,13 @@ func Pagination(db *gorm.DB, urlQuery URLQuery, dateColumn ...string) *gorm.DB {
 	if dateColumn != nil {
 		switch {
 		// if start and end sets
-		case urlQuery.StartDate != "" && urlQuery.EndDate != "":
+		case len(urlQuery.StartDate) > 0 && len(urlQuery.EndDate) > 0:
 			between = fmt.Sprintf("%s between ? and ?", dateColumn[0])
 			return db.Where(between, urlQuery.StartDate, urlQuery.EndDate)
-		case urlQuery.StartDate != "":
+		case len(urlQuery.StartDate) > 0:
 			between = fmt.Sprintf(between, dateColumn[0])
 			return db.Where(between, urlQuery.StartDate)
-		case urlQuery.EndDate != "":
+		case len(urlQuery.EndDate) > 0:
 			between = fmt.Sprintf("%s between ? and ?", dateColumn[0])
 			return db.Where(between, time.Now().Format(formatDate), urlQuery.EndDate)
 		default:

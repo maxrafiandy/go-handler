@@ -50,7 +50,7 @@ func logError(info interface{}) {
 	filepath := fmt.Sprintf("log/ERROR_%s.log", now)
 	file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		log.Fatalf("error opening file: %v\n", err)
+		log.Fatalf("[go-handler] error opening file: %v", err)
 	}
 	defer file.Close()
 
@@ -64,7 +64,7 @@ func logInfo(info interface{}) {
 	filepath := fmt.Sprintf("log/DEBUG_%s.log", now)
 	file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		log.Fatalf("error opening file: %v\n", err)
+		log.Fatalf("[go-handler] error opening file: %v", err)
 	}
 	defer file.Close()
 
@@ -78,7 +78,7 @@ func logResponse(info interface{}) {
 	filepath := fmt.Sprintf("log/RESPONSE_%s.log", now)
 	file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		log.Fatalf("error opening file: %v\n", err)
+		log.Fatalf("[go-handler] error opening file: %v", err)
 	}
 	defer file.Close()
 
@@ -89,7 +89,7 @@ func logResponse(info interface{}) {
 func createLogDirectory() {
 	if _, err := os.Stat("log"); os.IsNotExist(err) {
 		if err = os.Mkdir("log", os.ModeDir); err != nil {
-			log.Fatal(err)
+			log.Fatalf("[go-handler] fatal: %v", err)
 		}
 	}
 }

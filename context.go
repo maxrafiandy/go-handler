@@ -75,7 +75,7 @@ func (f ContextFunc) HandlerFunc(w http.ResponseWriter, r *http.Request) interfa
 	ctx.Vars = mux.Vars(r)
 	ctx.result = f(ctx)
 
-	fmt.Printf("Handler result: %v", ctx.result)
+	fmt.Printf("[go-handler] result: %v\n", ctx.result)
 
 	return ctx.result
 }

@@ -44,7 +44,7 @@ func Logging(next http.Handler) http.Handler {
 		filepath := fmt.Sprintf("log/REQUEST_%s.log", now)
 		file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			log.Fatalf("error opening file: %v", err)
+			log.Fatalf("[go-handler] error opening file: %v", err)
 		}
 		defer file.Close()
 		log.SetOutput(file)
