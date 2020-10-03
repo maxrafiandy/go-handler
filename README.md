@@ -3,11 +3,10 @@ This handler use [gorilla mux](https://github.com/gorilla/mux) structs as defaul
 
 # How to use
 - Run `go get github.com/maxrafiandy/go-handler`
-- Set enviroment variable `ERROR_IMAGE` with value */path/to/error/image.png* (default is a blank white rectangle)
-- Create log directory in your project directory. The log file will be written in \*.log (if log directory is not exist it will created automatically by logger func)
+- (Optional) Set enviroment variable `ERROR_IMAGE` with value of */path/to/error/image.png*. Otherwise SendImage(path) returning page not found
 
-# Example
-## Routing
+# Examples
+## Standard Route
 ```
 package main
 
@@ -18,59 +17,91 @@ import (
   "github.com/maxrafiandy/go-handler"
 )
 
+func main() {
+  var goHandler *handler.Context
+
+  // Create new handler object
+  goHandler = handler.New(handler.JSONify, handler.Logging)
+
+  // route to http://localhost:8080/example-get
+  // curl -X GET http://localhost:8080/example-get
+  goHandler.GET("/example-get", func(ctx *handler.Context) interface{} {
+    return ctx.Unauthorized(&handler.Error{Description: "Not authorized"})
+  })
+
+  // route to http://localhost:8080/example-post
+  // curl -X POST http://localhost:8080/example-post
+  goHandler.POST("/example-post", func(ctx *handler.Context) interface{} {
+    return ctx.Created("Hello, POST!")
+  })
+
+  // route to http://localhost:8080/example-image
+  // curl -X GET http://localhost:8080/example-image
+  goHandler.GET("/example-get", func(ctx *handler.Context) interface{} {
+    return ctx.SendImage("assets/example.png"})
+  })
+
+  log.Fatal(goHandler.Serve(8080))
+}
+```
+## Restful Route
+```
+// create a derivied struc of handler.Context
 type testRest struct {
   handler.Context
 }
 
+// Get handle http://localhost:8080/example-rest with http method GET
 func (t *testRest) Get() interface{} {
   return t.Success("Hello, REST Get!")
 }
 
+// Post handle http://localhost:8080/example-rest with http method POST
 func (t *testRest) Post() interface{} {
   return t.Success("Hello, REST Post!")
 }
 
+// GetID handle http://localhost:8080/example-rest/{id} with http method GET
 func (t *testRest) GetID(id string) interface{} {
-  return t.Success(fmt.Sprintf("Hellon, GET ID %s", id))
+  return t.Success(fmt.Sprintf("Hello, GET ID %s", id))
 }
 
+// Put handle http://localhost:8080/example-rest with http method Put
+func (t *testRest) Put() interface{} {
+  return t.Success("Hello, REST Post!")
+}
+
+// PutID handle http://localhost:8080/example-rest/{id} with http method PUT
 func (t *testRest) PutID(id string) interface{} {
-  return t.Success(fmt.Sprintf("Hellon, PUT ID %s", id))
+  return t.Success(fmt.Sprintf("Hello, PUT ID %s", id))
+}
+
+// Patch handle http://localhost:8080/example-rest with http method PATCH
+func (t *testRest) Patch() interface{} {
+  return t.Success("Hello, REST Patch!")
+}
+
+// PatchID handle http://localhost:8080/example-rest/{id} with http method PATCH
+func (t *testRest) PatchID(id string) interface{} {
+  return t.Success(fmt.Sprintf("Hello, PATCH ID %s", id))
+}
+
+// Delete handle http://localhost:8080/example-rest with http method DELETE
+func (t *testRest) Delete() interface{} {
+  return t.Success("Hello, REST Delete!))
+}
+
+// DeleteID handle http://localhost:8080/example-rest/{id} with http method DELETE
+func (t *testRest) DeleteID(id string) interface{} {
+  return t.Success(fmt.Sprintf("Hello, DELETE ID %s", id))
 }
 
 func main() {
   var (
     goHandler *handler.Context
-    rest      testRest
+    rest testRest
   )
 
-  // Create new handler object
-  goHandler = handler.New(handler.JSONify, handler.Logging)
-
-  // route to http://host:port/example-get
-  // curl -X GET http://host:port/example-get
-  goHandler.GET("/example-get", func(ctx *handler.Context) interface{} {
-    return ctx.Unauthorized(&handler.Error{Description: "Not authorized"})
-  })
-
-  // route to http://host:port/example-post
-  // curl -X POST http://host:port/example-post
-  goHandler.POST("/example-post", func(ctx *handler.Context) interface{} {
-    return ctx.Created("Hello, POST!")
-  })
-
-  // route to http://host:port/example-rest with multiple http methods
-  // curl -X GET http://host:port/example-rest
-  // curl -X POST http://host:port/example-rest
-  // curl -X PUT http://host:port/example-rest
-  // curl -X PATCH http://host:port/example-rest
-  // curl -X DELETE http://host:port/example-rest
-  // curl -X GET http://host:port/example-rest/{id}
-  // curl -X PUT http://host:port/example-rest/{id}
-  // curl -X PATCH http://host:port/example-rest/{id}
-  // curl -X DELETE http://host:port/example-rest/{id}
-  // if you don't override/implement handler.RestfulHandlers interface
-  // it will simply return method not allowed
   goHandler.REST("/example-rest", func(ctx *handler.Context) interface{} {
     return handler.REST(&rest, ctx)
   })
@@ -90,13 +121,13 @@ goHandler.REST("/example-rest", func(ctx *handler.Context) interface{} {
 // create api router with CSP middleware
 api := goHandler.SubRouter("/api/v1", handler.AddCSP)
 
-// route to /api/v1/example-post
+// route to http://localhost:8080/api/v1/example-post
 api.POST("/example-post", func(ctx *handler.Context) interface{} {
   // do something
   return ctx.Success("Hello, world!")
 })
 
-// route to /api/v1/example-get
+// route to http://localhost:8080/api/v1/example-get
 api.GET("/example-get", func(ctx *handler.Context) interface{} {
   // do something
   return ctx.Success("Hello, world!")
@@ -105,7 +136,7 @@ api.GET("/example-get", func(ctx *handler.Context) interface{} {
 // create public router
 public := goHandler.SubRouter("/public")
 
-// route to /public/example-get
+// route to http://localhost:8080/public/example-get
 public.GET("/example-get", func(ctx *handler.Context) interface{} {
   // do something
   return ctx.Success("Hello, world!")

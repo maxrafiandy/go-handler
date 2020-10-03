@@ -4,15 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"image"
-	"image/color"
-	"image/draw"
 	"image/jpeg"
 	"image/png"
 	"net/http"
 	"net/url"
 
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/gorilla/schema"
@@ -23,34 +20,15 @@ func errorImage(w http.ResponseWriter) {
 
 	_, err := os.Open(os.Getenv("ERROR_IMAGE"))
 	if err == nil {
-		WriteImage(w, noImagePath)
+		WriteImage(noImagePath, w)
 		return
 	}
 
-	// Error image is a JPEG draw
-	w.Header().Set(contentType, imageJPG)
-
-	// create new image object
-	img := image.NewRGBA(image.Rect(0, 0, 240, 240))
-	blue := color.RGBA{255, 255, 255, 0}
-
-	// // draw the image
-	draw.Draw(img, img.Bounds(), &image.Uniform{blue}, image.ZP, draw.Src)
-
-	// image buffer
-	buffer := new(bytes.Buffer)
-
-	// encode the buffer
-	jpeg.Encode(buffer, img, nil)
-
-	// write response
-	w.Header().Set(contentLength, strconv.Itoa(len(buffer.Bytes())))
-	w.WriteHeader(http.StatusOK)
-	w.Write(buffer.Bytes())
+	response(w, MessagePageNotFound, nil, http.StatusNotFound)
 }
 
 // WriteImage send response as an image
-func WriteImage(w http.ResponseWriter, path string) {
+func WriteImage(path string, w http.ResponseWriter) error {
 	// inner function for failure action
 	fail := func(data interface{}) {
 		errorImage(w)
@@ -63,7 +41,7 @@ func WriteImage(w http.ResponseWriter, path string) {
 	img, err = os.Open(path)
 	if err != nil {
 		fail(err)
-		return
+		return err
 	}
 	defer img.Close()
 
@@ -97,7 +75,7 @@ func WriteImage(w http.ResponseWriter, path string) {
 
 	if err != nil {
 		fail(err)
-		return
+		return err
 	}
 
 	w.Header().Set("Strict-Transport-Security", "max-age=31536000")
@@ -107,9 +85,10 @@ func WriteImage(w http.ResponseWriter, path string) {
 
 	if _, err := w.Write(bimg.Bytes()); err != nil {
 		fail(err)
-		return
+		return err
 	}
 	Logger(path)
+	return nil
 }
 
 // FormData parse the incoming POST body into struct

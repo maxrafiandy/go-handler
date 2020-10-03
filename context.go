@@ -10,7 +10,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
-	"github.com/urfave/negroni"
 )
 
 var (
@@ -61,11 +60,9 @@ func (c *Context) Serve(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), c.Router)
 }
 
-// ServeWithNegroni call http.ListenAndServe with default negroni classic middleware
-func (c *Context) ServeWithNegroni(port int) error {
-	n := negroni.Classic()
-	n.UseHandler(c.Router)
-	return http.ListenAndServe(fmt.Sprintf(":%d", port), n)
+// ServeWith call http.ListenAndServe with default negroni classic middleware
+func (c *Context) ServeWith(port int, router http.Handler) error {
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), router)
 }
 
 // HandlerFunc execute request chain
@@ -351,4 +348,14 @@ func (c *Context) MethodNotAllowed() interface{} {
 // NotImplemented send general 405-Method not allowed
 func (c *Context) NotImplemented() interface{} {
 	return response(c.Writer, MessageNotImplemented, errNotImplemented, http.StatusNotImplemented)
+}
+
+// SendImage returns image in response body
+func (c *Context) SendImage(path string) interface{} {
+	if err := WriteImage(path, c.Writer); err != nil {
+		return &Error{Description: err.Error(),
+			Errors: err,
+		}
+	}
+	return "send image: " + path
 }
