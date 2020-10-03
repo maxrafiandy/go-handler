@@ -123,7 +123,8 @@ goHandler.GET("/example-get/{username}", func(ctx *handler.Context) interface{} 
 ## Accessing database
 ```
 // Connect to database (supported driver: mysql, postgres, mssql).
-// set DEBUG_MODE in your enviroment variable to enable console debuging of gorm itself. 
+// set DEBUG_MODE in your enviroment variable to enable console query debuging.
+// default value of DEBUG_MODE is FALSE
 handler.GormAdd("connectionName", handler.NewGormProp("localhost", "3306", "userdb", "password", "dbname", "driver"))
 
 // GormGet returns a *gorm.DB object with preload enabled.
