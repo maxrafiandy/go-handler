@@ -162,3 +162,5 @@ handler.GormAdd("connectionName", handler.NewGormProp("localhost", "3306", "user
 // for more details read official gorm documentation.
 db := handler.GormGet("connectionName")
 ```
+# Credits to
+All dependencies libraries listed in go.mod file
