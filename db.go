@@ -96,9 +96,9 @@ func GormGet(alias string) *gorm.DB {
 // only use dateColumn[0]. Call this function before PageResult
 func Pagination(db *gorm.DB, urlQuery URLQuery, dateColumn ...string) *gorm.DB {
 	var (
-		limit   int = 10
-		page    int = 0
-		between string
+		limit   int    = 10
+		page    int    = 0
+		between string = "%s = ?"
 	)
 
 	if len(urlQuery.ItemsPerPage) != 0 {
