@@ -29,6 +29,7 @@ type (
 		Router   *mux.Router
 		Writer   http.ResponseWriter
 		Request  *http.Request
+		Vars     map[string]string // Vars
 	}
 
 	// ContextFunc func
@@ -73,6 +74,8 @@ func (f ContextFunc) HandlerFunc(w http.ResponseWriter, r *http.Request) interfa
 	defer contextPool.Put(ctx)
 
 	ctx.reset(w, r)
+
+	ctx.Vars = mux.Vars(r)
 	ctx.result = f(ctx)
 
 	fmt.Printf("Handler result: %v", ctx.result)
@@ -110,6 +113,21 @@ func (c *Context) addRest(method, path string, ctx ContextFunc, middlewares []mu
 // REST map request as http RESTful resource
 func (c *Context) REST(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRest(restful, path, ctx, middlewares)
+}
+
+// SubRouter create sub router and set ctx
+func (c *Context) SubRouter(path string, middlewares ...mux.MiddlewareFunc) *Context {
+	var (
+		subRouter  *mux.Router
+		newContext *Context
+	)
+
+	subRouter = Group(path, c.Router)
+	subRouter.Use(middlewares...)
+
+	newContext = New()
+	newContext.Router = subRouter
+	return newContext
 }
 
 // GET handle http GET request

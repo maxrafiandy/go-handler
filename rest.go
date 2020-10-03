@@ -51,6 +51,6 @@ func REST(rest RestHandlers, ctx *Context) interface{} {
 			return rest.DeleteID(id)
 		}
 	}
-	// this line may never reached
-	return &Error{Description: "REST EOF!"}
+
+	return ctx.MethodNotAllowed()
 }
