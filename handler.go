@@ -142,17 +142,15 @@ func FormData(form interface{}, r *http.Request) error {
 
 // DecodeURLQuery parse the incoming URL query into struct Urlq.
 // Returns true if everyting went well, otherwise false.
-func DecodeURLQuery(w http.ResponseWriter, v url.Values) (URLQuery, bool) {
+func DecodeURLQuery(w http.ResponseWriter, v url.Values) (args URLQuery, err error) {
 	// get url's query
-	var args URLQuery
 	decoder := schema.NewDecoder()
 	decoder.Decode(&args, v)
 	if err := args.Validate(); err != nil {
-		response(w, MessageBadRequest, err, http.StatusBadRequest)
-		return args, false
+		return args, err
 	}
 
-	return args, true
+	return args, nil
 }
 
 func response(w http.ResponseWriter, message string, data interface{}, status int) interface{} {
