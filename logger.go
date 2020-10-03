@@ -11,11 +11,7 @@ import (
 func Logger(info interface{}) {
 	// check parent type of info interface
 
-	if _, err := os.Stat("log"); os.IsNotExist(err) {
-		if err = os.Mkdir("log", os.ModeDir); err != nil {
-			log.Fatal(err)
-		}
-	}
+	createLogDirectory()
 
 	switch info.(type) {
 	// if it's a response
@@ -88,4 +84,12 @@ func logResponse(info interface{}) {
 
 	log.SetOutput(file)
 	log.Println(info)
+}
+
+func createLogDirectory() {
+	if _, err := os.Stat("log"); os.IsNotExist(err) {
+		if err = os.Mkdir("log", os.ModeDir); err != nil {
+			log.Fatal(err)
+		}
+	}
 }
