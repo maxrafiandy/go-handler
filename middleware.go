@@ -19,7 +19,7 @@ func AddHSTS(next http.Handler) http.Handler {
 // AddCSP sets HSTS header
 func AddCSP(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Security-Policy", "default-src 'self'")
+		w.Header().Set(contentSecurityPolicy, "default-src 'self'")
 		next.ServeHTTP(w, r)
 	})
 }
@@ -39,11 +39,7 @@ func Logging(next http.Handler) http.Handler {
 		// log incoming request details
 		now := time.Now().Format(formatDateYMD)
 
-		if _, err := os.Stat("log"); os.IsNotExist(err) {
-			if err = os.Mkdir("log", os.ModeDir); err != nil {
-				log.Fatal(err)
-			}
-		}
+		createLogDirectory()
 
 		filepath := fmt.Sprintf("log/REQUEST_%s.log", now)
 		file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)

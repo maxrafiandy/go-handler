@@ -28,6 +28,9 @@ const (
 	patch   string = "PATCH"
 	delete  string = "DELETE"
 	restful string = "rest"
+
+	// 10MB
+	defaultMaxMemory int64 = 10 << 20
 )
 
 // exported constants
