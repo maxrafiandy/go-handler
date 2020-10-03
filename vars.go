@@ -7,6 +7,7 @@ import (
 
 // private constants
 const (
+	formatDate              string = "2006-01-02"
 	formatDateYMD           string = "20060102"
 	contentType             string = "Content-Type"
 	contentLength           string = "Content-Length"

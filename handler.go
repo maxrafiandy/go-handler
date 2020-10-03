@@ -132,6 +132,11 @@ func DecodeURLQuery(w http.ResponseWriter, v url.Values) (args URLQuery, err err
 	return args, nil
 }
 
+// Write custom message response
+func Write(w http.ResponseWriter, message string, data interface{}, status int) interface{} {
+	return response(w, message, data, status)
+}
+
 func response(w http.ResponseWriter, message string, data interface{}, status int) interface{} {
 	w.WriteHeader(status)
 	encoder := json.NewEncoder(w)

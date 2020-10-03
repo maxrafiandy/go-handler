@@ -3,8 +3,8 @@ package handler
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -92,66 +92,87 @@ func GormGet(alias string) *gorm.DB {
 
 // Pagination set offset and limit of query.
 // Default value of limit is 10, and offset of page 1.
-func Pagination(db *gorm.DB, u URLQuery) *gorm.DB {
-	// set limit
-	nlimit := 10
-	if len(u.ItemsPerPage) != 0 {
-		n, _ := strconv.Atoi(u.ItemsPerPage)
-		nlimit = n
-	}
-	db = db.Limit(nlimit)
+// Note: dateColumn is an optional parameter and the function
+// only use dateColumn[0]. Call this function before PageResult
+func Pagination(db *gorm.DB, urlQuery URLQuery, dateColumn ...string) *gorm.DB {
+	var (
+		limit   int = 10
+		page    int = 0
+		between string
+	)
 
-	// set page offset
-	npage := 0
-	if len(u.Page) != 0 {
-		n, _ := strconv.Atoi(u.Page)
-		npage = (n - 1) * nlimit
+	if len(urlQuery.ItemsPerPage) != 0 {
+		limit, _ = strconv.Atoi(urlQuery.ItemsPerPage)
 	}
-	db = db.Offset(npage)
+	db = db.Limit(limit)
+
+	if len(urlQuery.Page) != 0 {
+		page, _ = strconv.Atoi(urlQuery.Page)
+		page = (page - 1) * limit
+	}
+	db = db.Offset(page)
+
+	if dateColumn != nil {
+		switch {
+		// if start and end sets
+		case urlQuery.StartDate != "" && urlQuery.EndDate != "":
+			between = fmt.Sprintf("%s between ? and ?", dateColumn[0])
+			return db.Where(between, urlQuery.StartDate, urlQuery.EndDate)
+		case urlQuery.StartDate != "":
+			return db.Where(between, urlQuery.StartDate)
+		case urlQuery.EndDate != "":
+			between = fmt.Sprintf("%s between ? and ?", dateColumn[0])
+			return db.Where(between, time.Now().Format(formatDate), urlQuery.EndDate)
+		default:
+			return db.Where(between, time.Now().Format(formatDate))
+		}
+	}
 
 	return db
 }
 
-// DateRange set single date or range date.
-// if there are 2 dates passed from url - start_date and end_date -
-// it will return a between start_date and end_date. if it only pass
-// start_date then it return where date(column) = start_date,
-// otherwise date(column) = NOW()
-func DateRange(db *gorm.DB, vars URLQuery, column string) (*gorm.DB, error) {
+// PageResult handle detail of BuildQuery and returns PaginationResult.
+// This should called after Pagination() function to generate offset limit.
+// Warning: must supply executed gorm.DB object (already has Value) ex: PageResult(db.Find(&users), urlQuery)
+func PageResult(db *gorm.DB, urlQuery URLQuery) *PaginationResult {
 	var (
-		between    string = fmt.Sprintf("date(%s) = ?", column)
-		expression string = `^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$`
-		regexps    *regexp.Regexp
-		err        error = &Error{Description: invalidDateFormat}
+		count     int
+		limit     int = 10
+		page      int = 0
+		result    PaginationResult
+		startDate time.Time
+		endDate   time.Time
 	)
 
-	checkValid := func(value string) bool {
-		regexps, _ = regexp.Compile(expression)
-		return regexps.MatchString(value)
+	result.List = db.Value
+	db.Offset(-1).Count(&count)
+
+	if len(urlQuery.ItemsPerPage) != 0 {
+		limit, _ = strconv.Atoi(urlQuery.ItemsPerPage)
 	}
 
-	switch {
-	// if start and end sets
-	case vars.StartDate != "" && vars.EndDate != "":
-		if !checkValid(vars.StartDate) || !checkValid(vars.EndDate) {
-			return db, err
-		}
-		between = fmt.Sprintf("date(%s) between ? and ?", column)
-		return db.Where(between, vars.StartDate, vars.EndDate), nil
-	case vars.StartDate != "":
-		if !checkValid(vars.StartDate) {
-			return db, err
-		}
-		return db.Where(between, vars.StartDate), nil
-	case vars.EndDate != "":
-		if !checkValid(vars.EndDate) {
-			return db, err
-		}
-		between = fmt.Sprintf("date(%s) between ? and ?", column)
-		return db.Where(between, time.Now().Format(formatDateYMD), vars.EndDate), nil
-	default:
-		return db.Where(between, time.Now().Format(formatDateYMD)), nil
+	if len(urlQuery.Page) != 0 {
+		page, _ = strconv.Atoi(urlQuery.Page)
+		page = (page - 1) * limit
 	}
+
+	result.Keyword = urlQuery.Keyword
+	result.ItemsPerPage = limit
+	result.Page = page/limit + 1
+	result.TotalItems = count
+	result.TotalPage = int(math.Ceil(float64(count) / float64(limit)))
+
+	if urlQuery.StartDate != "" {
+		startDate, _ = time.Parse(formatDate, urlQuery.StartDate)
+		result.StartDate = &startDate
+	}
+
+	if urlQuery.EndDate != "" {
+		endDate, _ = time.Parse(formatDate, urlQuery.EndDate)
+		result.EndDate = &endDate
+	}
+
+	return &result
 }
 
 // RedisAdd returns new client of redis host

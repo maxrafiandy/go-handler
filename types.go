@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"time"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 
@@ -27,13 +29,25 @@ func (e *Error) Error() string {
 	return e.Description
 }
 
-// URLQuery struct for Server Side Rendering
+// URLQuery struct for server side rendering
 type URLQuery struct {
 	ItemsPerPage string `schema:"items_per_page" json:"items_per_page"`
 	Page         string `schema:"page" json:"page"`
 	Keyword      string `schema:"keyword" json:"keyword,omitempty"`
 	StartDate    string `schema:"start_date" json:"start_date,omitempty"`
 	EndDate      string `schema:"end_date" json:"end_date,omitempty"`
+}
+
+// PaginationResult for server side rendering
+type PaginationResult struct {
+	List         interface{} `json:"list"`
+	Keyword      string      `json:"keyword,omitempty"`
+	ItemsPerPage int         `json:"items_per_page"`
+	TotalItems   int         `json:"total_items"`
+	Page         int         `json:"page"`
+	TotalPage    int         `json:"total_pages"`
+	StartDate    *time.Time  `json:"start_date,omitempty"`
+	EndDate      *time.Time  `json:"end_date,omitempty"`
 }
 
 // Validate implements Validatior Validate

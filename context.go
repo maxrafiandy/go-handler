@@ -350,6 +350,10 @@ func (c *Context) NotImplemented() interface{} {
 	return response(c.Writer, MessageNotImplemented, errNotImplemented, http.StatusNotImplemented)
 }
 
+func (c *Context) Write(message string, data interface{}, status int) interface{} {
+	return response(c.Writer, message, data, status)
+}
+
 // SendImage returns image in response body
 func (c *Context) SendImage(path string) interface{} {
 	if err := WriteImage(path, c.Writer); err != nil {
