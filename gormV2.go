@@ -19,7 +19,7 @@ var (
 
 // GetGormDB returns database instance
 func GetGormDB(alias string) *gorm.DB {
-	return gormDBs[alias]
+	return gormDBs[alias].Session(&gorm.Session{SkipDefaultTransaction: true})
 }
 
 // ConnectMysql open connection to mysql server
@@ -32,7 +32,9 @@ func ConnectMysql(alias, dataSource string, config *gorm.Config) *gorm.DB {
 	if gormDBs[alias] == nil {
 
 		if config == nil {
-			config = &gorm.Config{}
+			config = &gorm.Config{
+				PrepareStmt: true,
+			}
 		}
 
 		gormDBs[alias], err = gorm.Open(mysql.Open(dataSource), config)
@@ -46,7 +48,7 @@ func ConnectMysql(alias, dataSource string, config *gorm.Config) *gorm.DB {
 		}
 	}
 
-	return gormDBs[alias]
+	return gormDBs[alias].Set("gorm:auto_preload", true)
 }
 
 // ConnectPostgres open connection to postgres server
@@ -59,7 +61,9 @@ func ConnectPostgres(alias, dataSource string, config *gorm.Config) *gorm.DB {
 	if gormDBs[alias] == nil {
 
 		if config == nil {
-			config = &gorm.Config{}
+			config = &gorm.Config{
+				PrepareStmt: true,
+			}
 		}
 
 		gormDBs[alias], err = gorm.Open(postgres.Open(dataSource), config)
@@ -73,7 +77,7 @@ func ConnectPostgres(alias, dataSource string, config *gorm.Config) *gorm.DB {
 		}
 	}
 
-	return gormDBs[alias]
+	return gormDBs[alias].Set("gorm:auto_preload", true)
 }
 
 // ConnectMssql open connection to postgres server
@@ -86,7 +90,9 @@ func ConnectMssql(alias, dataSource string, config *gorm.Config) *gorm.DB {
 	if gormDBs[alias] == nil {
 
 		if config == nil {
-			config = &gorm.Config{}
+			config = &gorm.Config{
+				PrepareStmt: true,
+			}
 		}
 
 		gormDBs[alias], err = gorm.Open(sqlserver.Open(dataSource), config)
@@ -100,7 +106,7 @@ func ConnectMssql(alias, dataSource string, config *gorm.Config) *gorm.DB {
 		}
 	}
 
-	return gormDBs[alias]
+	return gormDBs[alias].Set("gorm:auto_preload", true)
 }
 
 // Pagination set offset and limit of query.
