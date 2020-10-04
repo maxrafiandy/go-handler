@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -54,7 +56,8 @@ func ConnectMysql(alias, dataSource string, config *gorm.Config) {
 // "user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
 func ConnectPostgres(alias, dataSource string, config *gorm.Config) {
 	var (
-		err error
+		debug string
+		err   error
 	)
 
 	if gormDBs[alias] == nil {
@@ -71,6 +74,13 @@ func ConnectPostgres(alias, dataSource string, config *gorm.Config) {
 				Errors:      err,
 			}
 			log.Fatalf("[go-handler] fatal: %v", err)
+		}
+
+		debug = os.Getenv("DEBUG_MODE")
+		debug = strings.ToLower(debug)
+
+		if debug == "true" || debug == "1" {
+			gormDBs[alias] = gormDBs[alias].Debug()
 		}
 	}
 }
