@@ -18,13 +18,13 @@ import (
 // errorImage render an error image and send it as response
 func errorImage(w http.ResponseWriter) {
 
-	_, err := os.Open(os.Getenv("ERROR_IMAGE"))
-	if err == nil {
-		WriteImage(noImagePath, w)
-		return
+	file, err := os.Open(os.Getenv("ERROR_IMAGE"))
+	if err != nil {
+		response(w, "No image", nil, http.StatusNotFound)
 	}
+	defer file.Close()
 
-	response(w, MessagePageNotFound, nil, http.StatusNotFound)
+	WriteImage(os.Getenv("ERROR_IMAGE"), w)
 }
 
 // WriteImage send response as an image
