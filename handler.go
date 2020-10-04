@@ -16,15 +16,15 @@ import (
 )
 
 // errorImage render an error image and send it as response
-func errorImage(w http.ResponseWriter) {
-
+func errorImage(w http.ResponseWriter) interface{} {
+	// check for ERROR_IMAGE. If it exist return default
+	// no image file insted of 404-not found
 	file, err := os.Open(os.Getenv("ERROR_IMAGE"))
 	if err != nil {
-		response(w, "No image", nil, http.StatusNotFound)
-		return
+		return response(w, "No image", nil, http.StatusNotFound)
 	}
 	defer file.Close()
-	WriteImage(os.Getenv("ERROR_IMAGE"), w)
+	return WriteImage(os.Getenv("ERROR_IMAGE"), w)
 }
 
 // WriteImage send response as an image
