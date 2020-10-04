@@ -14,7 +14,10 @@ import (
 )
 
 var (
-	gormDBs map[string]*gorm.DB = make(map[string]*gorm.DB)
+	gormDBs           map[string]*gorm.DB = make(map[string]*gorm.DB)
+	defaultGormConfig *gorm.Config        = &gorm.Config{
+		PrepareStmt: true,
+	}
 )
 
 // GetGormDB returns database instance
@@ -22,9 +25,9 @@ func GetGormDB(alias string) *gorm.DB {
 	return gormDBs[alias].Session(&gorm.Session{SkipDefaultTransaction: true})
 }
 
-// ConnectMysql open connection to mysql server
+// ConnectMysql open connection to mysql server.
 // Example datasource "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
-func ConnectMysql(alias, dataSource string, config *gorm.Config) *gorm.DB {
+func ConnectMysql(alias, dataSource string, config *gorm.Config) {
 	var (
 		err error
 	)
@@ -32,9 +35,7 @@ func ConnectMysql(alias, dataSource string, config *gorm.Config) *gorm.DB {
 	if gormDBs[alias] == nil {
 
 		if config == nil {
-			config = &gorm.Config{
-				PrepareStmt: true,
-			}
+			config = defaultGormConfig
 		}
 
 		gormDBs[alias], err = gorm.Open(mysql.Open(dataSource), config)
@@ -47,13 +48,11 @@ func ConnectMysql(alias, dataSource string, config *gorm.Config) *gorm.DB {
 			log.Fatalf("[go-handler] fatal: %v", err)
 		}
 	}
-
-	return gormDBs[alias].Set("gorm:auto_preload", true)
 }
 
 // ConnectPostgres open connection to postgres server
 // "user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
-func ConnectPostgres(alias, dataSource string, config *gorm.Config) *gorm.DB {
+func ConnectPostgres(alias, dataSource string, config *gorm.Config) {
 	var (
 		err error
 	)
@@ -61,9 +60,7 @@ func ConnectPostgres(alias, dataSource string, config *gorm.Config) *gorm.DB {
 	if gormDBs[alias] == nil {
 
 		if config == nil {
-			config = &gorm.Config{
-				PrepareStmt: true,
-			}
+			config = defaultGormConfig
 		}
 
 		gormDBs[alias], err = gorm.Open(postgres.Open(dataSource), config)
@@ -76,13 +73,11 @@ func ConnectPostgres(alias, dataSource string, config *gorm.Config) *gorm.DB {
 			log.Fatalf("[go-handler] fatal: %v", err)
 		}
 	}
-
-	return gormDBs[alias].Set("gorm:auto_preload", true)
 }
 
 // ConnectMssql open connection to postgres server
 // "sqlserver://gorm:LoremIpsum86@localhost:9930?database=gorm"
-func ConnectMssql(alias, dataSource string, config *gorm.Config) *gorm.DB {
+func ConnectMssql(alias, dataSource string, config *gorm.Config) {
 	var (
 		err error
 	)
@@ -90,9 +85,7 @@ func ConnectMssql(alias, dataSource string, config *gorm.Config) *gorm.DB {
 	if gormDBs[alias] == nil {
 
 		if config == nil {
-			config = &gorm.Config{
-				PrepareStmt: true,
-			}
+			config = defaultGormConfig
 		}
 
 		gormDBs[alias], err = gorm.Open(sqlserver.Open(dataSource), config)
@@ -105,8 +98,6 @@ func ConnectMssql(alias, dataSource string, config *gorm.Config) *gorm.DB {
 			log.Fatalf("[go-handler] fatal: %v", err)
 		}
 	}
-
-	return gormDBs[alias].Set("gorm:auto_preload", true)
 }
 
 // Pagination set offset and limit of query.
