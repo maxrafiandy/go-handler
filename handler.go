@@ -15,12 +15,24 @@ import (
 	"github.com/gorilla/schema"
 )
 
+// errorImage render an error image and send it as response
+func errorImage(w http.ResponseWriter) {
+
+	file, err := os.Open(os.Getenv("ERROR_IMAGE"))
+	if err != nil {
+		response(w, "No image", nil, http.StatusNotFound)
+		return
+	}
+	defer file.Close()
+	WriteImage(os.Getenv("ERROR_IMAGE"), w)
+}
+
 // WriteImage send response as an image
 func WriteImage(path string, w http.ResponseWriter) error {
 	// inner function for failure action
 	fail := func(data interface{}) {
+		errorImage(w)
 		Logger(data)
-		response(w, "No image", nil, http.StatusNotFound)
 	}
 	var fimg image.Image
 	var img *os.File
