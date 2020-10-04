@@ -1,10 +1,5 @@
 package handler
 
-import (
-	"github.com/go-redis/redis"
-	"github.com/jinzhu/gorm"
-)
-
 // private constants
 const (
 	formatDate              string = "2006-01-02"
@@ -82,9 +77,6 @@ const (
 
 // private variables
 var (
-	gormDBs  map[string]*gorm.DB      = make(map[string]*gorm.DB)
-	redisDBs map[string]*redis.Client = make(map[string]*redis.Client)
-
 	errNotImplemented Error = Error{
 		Description: MessageNotImplemented,
 	}
@@ -99,5 +91,5 @@ var (
 // public variables
 var (
 	// GormProps maps database properties
-	GormProps map[string]*GormProp = make(map[string]*GormProp)
+	GormProps map[string]*Gormv1Prop = make(map[string]*Gormv1Prop)
 )

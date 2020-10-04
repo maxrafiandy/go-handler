@@ -75,7 +75,12 @@ func (f ContextFunc) HandlerFunc(w http.ResponseWriter, r *http.Request) interfa
 	ctx.Vars = mux.Vars(r)
 	ctx.result = f(ctx)
 
-	fmt.Printf("[go-handler] result: %v\n", ctx.result)
+	switch ctx.result.(type) {
+	case error, Error, *Error:
+		fmt.Printf("[go-handler] error: {%v}\n", ctx.result)
+	default:
+		fmt.Println("[go-handler] info: request complete")
+	}
 
 	return ctx.result
 }

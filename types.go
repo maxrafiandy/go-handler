@@ -43,9 +43,9 @@ type PaginationResult struct {
 	List         interface{} `json:"list"`
 	Keyword      string      `json:"keyword,omitempty"`
 	ItemsPerPage int         `json:"items_per_page"`
-	TotalItems   int         `json:"total_items"`
+	TotalItems   int64       `json:"total_items"`
 	Page         int         `json:"page"`
-	TotalPage    int         `json:"total_pages"`
+	TotalPage    int64       `json:"total_pages"`
 	StartDate    *time.Time  `json:"start_date,omitempty"`
 	EndDate      *time.Time  `json:"end_date,omitempty"`
 }
@@ -61,8 +61,8 @@ func (u URLQuery) Validate() error {
 	)
 }
 
-// GormProp struct for database connection
-type GormProp struct {
+// Gormv1Prop struct for database connection
+type Gormv1Prop struct {
 	host             string
 	port             string
 	user             string

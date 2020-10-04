@@ -1,10 +1,16 @@
 package handler
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
 	"time"
+)
+
+var (
+	buf        bytes.Buffer
+	loggerInfo = log.New(&buf, "INFO: ", log.Lshortfile)
 )
 
 // Logger logs information to log/info.log file
