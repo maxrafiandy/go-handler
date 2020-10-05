@@ -152,15 +152,30 @@ goHandler.GET("/example-get/{username}", func(ctx *handler.Context) interface{} 
 }, handler.JSONify)
 ```
 ## Accessing database
+### Gorm v2
+```
+// mysql
+handler.ConnectMysql("connectionAlias", "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local", nil)
+
+// postges
+handler.ConnectPostgres("connectionAlias", "user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai", nil)
+
+// mssql
+handler.ConnectMssal("connectionAlias","sqlserver://gorm:LoremIpsum86@localhost:9930?database=gorm", nil)
+
+// return index "connectionAlias" instance
+db := handler.GetGormDBv1("connectionAlias")
+```
+### Gorm v1
 ```
 // Connect to database (supported driver: mysql, postgres, mssql).
 // set DEBUG_MODE in your enviroment variable to enable console query debuging.
 // default value of DEBUG_MODE is FALSE
-handler.GormAdd("connectionName", handler.NewGormProp("localhost", "3306", "userdb", "password", "dbname", "driver"))
+handler.AddGormv1("connectionAlias", handler.NewGormProp("localhost", "3306", "userdb", "password", "dbname", "driver"))
 
-// GormGet returns a *gorm.DB object with preload enabled.
+// GetGormDBv1 returns a *gorm.DB object with preload enabled.
 // for more details read official gorm documentation.
-db := handler.GormGet("connectionName")
+db := handler.GetGormDBv1("connectionAlias")
 ```
 # Credits to
 All dependencies libraries listed in go.mod file
