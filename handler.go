@@ -137,6 +137,15 @@ func Write(w http.ResponseWriter, message string, data interface{}, status int) 
 	return response(w, message, data, status)
 }
 
+// DescError returns handler.Error struct with generated
+// string err.Error() as its description
+func DescError(err error) *Error {
+	return &Error{
+		Description: err.Error(),
+		Errors:      err,
+	}
+}
+
 func response(w http.ResponseWriter, message string, data interface{}, status int) interface{} {
 	w.WriteHeader(status)
 	encoder := json.NewEncoder(w)
