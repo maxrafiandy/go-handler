@@ -6,7 +6,7 @@ const (
 	formatDateYMD           string = "20060102"
 	contentType             string = "Content-Type"
 	contentLength           string = "Content-Length"
-	imageJPG                string = "image/jpg"
+	imageJPG                string = "image/jpeg"
 	imagePNG                string = "image/png"
 	invalidContentType      string = "Invalid content type"
 	invalidDateFormat       string = "Invalid date format"
