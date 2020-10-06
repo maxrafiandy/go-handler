@@ -108,8 +108,9 @@ func (c *Context) addRoute(method, path string, ctx ContextFunc, middlewares []m
 func (c *Context) addRest(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
 	c.add(method, path, ctx, middlewares)
 	sub := Group(path, c.Router)
-	sub.Handle(index, c.handlers[method+path]).Methods(get, post, put, delete, patch)
-	sub.Handle(subID, c.handlers[method+path]).Methods(get, put, patch, delete)
+
+	sub.Handle(index, c.handlers[method+path]).Methods(indexMethods...)
+	sub.Handle(subID, c.handlers[method+path]).Methods(subIDMethods...)
 }
 
 // REST map request as http RESTful resource
