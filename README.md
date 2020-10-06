@@ -164,7 +164,7 @@ handler.ConnectPostgres("connectionAlias", "user=gorm password=gorm dbname=gorm 
 handler.ConnectMssal("connectionAlias","sqlserver://gorm:LoremIpsum86@localhost:9930?database=gorm", nil)
 
 // return index "connectionAlias" instance
-db := handler.GetGormDBv1("connectionAlias")
+db := handler.GetGormDB("connectionAlias")
 ```
 ### Gorm v1
 ```
