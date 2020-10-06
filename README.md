@@ -102,6 +102,9 @@ func main() {
     rest testRest
   )
 
+  // all method are accepted in goHandler.REST func, in order to map
+  // resource of testRest instance (inherit from handler.Context) to
+  // correct methods, we need to call handler.REST  
   goHandler.REST("/example-rest", func(ctx *handler.Context) interface{} {
     return handler.REST(&rest, ctx)
   })
