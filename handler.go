@@ -146,11 +146,17 @@ func DescError(err error) *Error {
 	}
 }
 
+// response returns JSON encoded datas
 func response(w http.ResponseWriter, message string, data interface{}, status int) interface{} {
+	// write collected headers with status
 	w.WriteHeader(status)
+
+	// encode data to json format
 	encoder := json.NewEncoder(w)
 	response := Response{Message: message, Data: data}
 	encoder.Encode(response)
+
+	// write log
 	Logger(response)
 
 	// return data
