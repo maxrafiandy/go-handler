@@ -6,18 +6,15 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strings"
-	"sync"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 )
 
-var (
-	contextPool sync.Pool
-)
-
 type (
 	context interface {
+		SetRequest(*http.Request)
+		SetWriter(http.ResponseWriter)
 		ServeHTTP(http.ResponseWriter, *http.Response)
 	}
 
@@ -28,7 +25,8 @@ type (
 		Router   *mux.Router
 		Writer   http.ResponseWriter
 		Request  *http.Request
-		Vars     map[string]string // Vars
+		// pool     sync.Pool
+		Vars map[string]string // Vars
 	}
 
 	// ContextFunc func
@@ -43,15 +41,15 @@ func New(middlewares ...mux.MiddlewareFunc) *Context {
 	h.Router.Use(middlewares...)
 
 	h.handlers = make(map[string]ContextFunc)
-	contextPool.New = func() interface{} {
-		return &Context{
-			Router:   nil,
-			Writer:   nil,
-			Request:  nil,
-			handlers: nil,
-			result:   nil,
-		}
-	}
+	// h.pool.New = func() interface{} {
+	// 	return &Context{
+	// 		Router:   nil,
+	// 		Writer:   nil,
+	// 		Request:  nil,
+	// 		handlers: nil,
+	// 		result:   nil,
+	// 	}
+	// }
 	return h
 }
 
@@ -67,13 +65,11 @@ func (c *Context) ServeWith(port int, router http.Handler) error {
 
 // HandlerFunc execute request chain
 func (f ContextFunc) HandlerFunc(w http.ResponseWriter, r *http.Request) interface{} {
-	ctx := contextPool.Get().(*Context)
-	defer contextPool.Put(ctx)
+	var ctx Context
 
 	ctx.reset(w, r)
-
 	ctx.Vars = mux.Vars(r)
-	ctx.result = f(ctx)
+	ctx.result = f(&ctx)
 
 	switch ctx.result.(type) {
 	case error, Error, *Error:
@@ -91,8 +87,8 @@ func (f ContextFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
-	c.Writer = w
-	c.Request = r
+	c.SetWriter(w)
+	c.SetRequest(r)
 }
 
 func (c *Context) add(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
@@ -111,6 +107,16 @@ func (c *Context) addRest(method, path string, ctx ContextFunc, middlewares []mu
 
 	sub.Handle(index, c.handlers[method+path]).Methods(indexMethods...)
 	sub.Handle(subID, c.handlers[method+path]).Methods(subIDMethods...)
+}
+
+// SetRequest set http.Request
+func (c *Context) SetRequest(r *http.Request) {
+	c.Request = r
+}
+
+// SetWriter set http.ResponseWriter
+func (c *Context) SetWriter(w http.ResponseWriter) {
+	c.Writer = w
 }
 
 // REST map request as http RESTful resource
