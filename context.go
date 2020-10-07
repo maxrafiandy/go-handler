@@ -12,21 +12,19 @@ import (
 )
 
 type (
-	context interface {
-		SetRequest(*http.Request)
-		SetWriter(http.ResponseWriter)
+	contextHandler interface {
 		ServeHTTP(http.ResponseWriter, *http.Response)
 	}
 
 	// Context context
 	Context struct {
+		// context  *Context
 		handlers map[string]ContextFunc
 		result   interface{}
 		Router   *mux.Router
 		Writer   http.ResponseWriter
 		Request  *http.Request
-		// pool     sync.Pool
-		Vars map[string]string // Vars
+		Vars     map[string]string // Vars
 	}
 
 	// ContextFunc func
@@ -41,15 +39,6 @@ func New(middlewares ...mux.MiddlewareFunc) *Context {
 	h.Router.Use(middlewares...)
 
 	h.handlers = make(map[string]ContextFunc)
-	// h.pool.New = func() interface{} {
-	// 	return &Context{
-	// 		Router:   nil,
-	// 		Writer:   nil,
-	// 		Request:  nil,
-	// 		handlers: nil,
-	// 		result:   nil,
-	// 	}
-	// }
 	return h
 }
 
@@ -87,8 +76,8 @@ func (f ContextFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
-	c.SetWriter(w)
-	c.SetRequest(r)
+	c.setWriter(w)
+	c.setRequest(r)
 }
 
 func (c *Context) add(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
@@ -110,12 +99,12 @@ func (c *Context) addRest(method, path string, ctx ContextFunc, middlewares []mu
 }
 
 // SetRequest set http.Request
-func (c *Context) SetRequest(r *http.Request) {
+func (c *Context) setRequest(r *http.Request) {
 	c.Request = r
 }
 
 // SetWriter set http.ResponseWriter
-func (c *Context) SetWriter(w http.ResponseWriter) {
+func (c *Context) setWriter(w http.ResponseWriter) {
 	c.Writer = w
 }
 
