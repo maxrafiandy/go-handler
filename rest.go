@@ -21,7 +21,7 @@ type RestHandlers interface {
 }
 
 // REST maps router to appropriate methods
-func REST(rest RestHandlers, ctx *Context) interface{} {
+func REST(rest RestHandlers, ctx *ContextHandler) interface{} {
 	id, withid := mux.Vars(ctx.Request)[id]
 
 	rest.reset(ctx.Writer, ctx.Request)
