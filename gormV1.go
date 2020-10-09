@@ -17,9 +17,9 @@ var (
 	gormV1DBs map[string]*gorm.DB = make(map[string]*gorm.DB)
 )
 
-// NewGormProp returns new database property
-func NewGormProp(host, port, user, pass, db, driver string) *Gormv1Prop {
-	prop := &Gormv1Prop{
+// NewGormv1Config returns new database property
+func NewGormv1Config(host, port, user, pass, db, driver string) *gormv1Config {
+	var prop = &gormv1Config{
 		host:     host,
 		port:     port,
 		user:     user,
@@ -49,8 +49,7 @@ func NewGormProp(host, port, user, pass, db, driver string) *Gormv1Prop {
 }
 
 // AddGormDBv1 connects and returns specific gorm connection
-func AddGormDBv1(alias string, prop *Gormv1Prop) *gorm.DB {
-	GormProps[alias] = prop
+func AddGormDBv1(alias string, prop *gormv1Config) {
 	if gormV1DBs[alias] == nil {
 		var err error
 		gormV1DBs[alias], err = gorm.Open(prop.driver, prop.connectionString)
@@ -70,8 +69,6 @@ func AddGormDBv1(alias string, prop *Gormv1Prop) *gorm.DB {
 			gormV1DBs[alias] = gormV1DBs[alias].Debug()
 		}
 	}
-
-	return gormV1DBs[alias].Set("gorm:auto_preload", true)
 }
 
 // GetGormDBv1 returns the "name" gorm connection
