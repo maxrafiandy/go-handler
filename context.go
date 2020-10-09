@@ -12,12 +12,12 @@ import (
 )
 
 type (
-	contextHandler interface {
+	context interface {
 		ServeHTTP(http.ResponseWriter, *http.Response)
 	}
 
-	// ContextHandler context
-	ContextHandler struct {
+	// Context context
+	Context struct {
 		handlers map[string]ContextFunc
 		result   interface{}
 		Router   *mux.Router
@@ -27,33 +27,35 @@ type (
 	}
 
 	// ContextFunc func
-	ContextFunc func(*ContextHandler) interface{}
+	ContextFunc func(*Context) interface{}
 )
 
 // New create new Context
-func New(middlewares ...mux.MiddlewareFunc) *ContextHandler {
-	var h = new(ContextHandler)
+func New(middlewares ...mux.MiddlewareFunc) *Context {
+	var h = new(Context)
 
 	h.Router = NewRouter()
-	h.Router.Use(middlewares...)
+	if len(middlewares) > 0 {
+		h.Router.Use(middlewares...)
+	}
 
 	h.handlers = make(map[string]ContextFunc)
 	return h
 }
 
 // Serve call http.ListenAndServe with default setting
-func (c *ContextHandler) Serve(port int) error {
+func (c *Context) Serve(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), c.Router)
 }
 
 // ServeWith call http.ListenAndServe with default negroni classic middleware
-func (c *ContextHandler) ServeWith(port int, router http.Handler) error {
+func (c *Context) ServeWith(port int, router http.Handler) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), router)
 }
 
 // HandlerFunc execute request chain
 func (f ContextFunc) HandlerFunc(w http.ResponseWriter, r *http.Request) interface{} {
-	var ctx ContextHandler
+	var ctx Context
 
 	ctx.reset(w, r)
 	ctx.Vars = mux.Vars(r)
@@ -74,22 +76,22 @@ func (f ContextFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.HandlerFunc(w, r)
 }
 
-func (c *ContextHandler) reset(w http.ResponseWriter, r *http.Request) {
+func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
 	c.setWriter(w)
 	c.setRequest(r)
 }
 
-func (c *ContextHandler) add(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
+func (c *Context) add(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
 	c.Router.Use(middlewares...)
 	c.handlers[method+path] = ctx
 }
 
-func (c *ContextHandler) addRoute(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
+func (c *Context) addRoute(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
 	c.add(method, path, ctx, middlewares)
 	c.Router.Handle(path, c.handlers[method+path]).Methods(method)
 }
 
-func (c *ContextHandler) addRest(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
+func (c *Context) addRest(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
 	c.add(method, path, ctx, middlewares)
 	sub := Group(path, c.Router)
 
@@ -98,25 +100,25 @@ func (c *ContextHandler) addRest(method, path string, ctx ContextFunc, middlewar
 }
 
 // SetRequest set http.Request
-func (c *ContextHandler) setRequest(r *http.Request) {
+func (c *Context) setRequest(r *http.Request) {
 	c.Request = r
 }
 
 // SetWriter set http.ResponseWriter
-func (c *ContextHandler) setWriter(w http.ResponseWriter) {
+func (c *Context) setWriter(w http.ResponseWriter) {
 	c.Writer = w
 }
 
 // REST map request as http RESTful resource
-func (c *ContextHandler) REST(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
+func (c *Context) REST(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRest(restful, path, ctx, middlewares)
 }
 
 // SubRouter create sub router and set ctx
-func (c *ContextHandler) SubRouter(path string, middlewares ...mux.MiddlewareFunc) *ContextHandler {
+func (c *Context) SubRouter(path string, middlewares ...mux.MiddlewareFunc) *Context {
 	var (
 		subRouter  *mux.Router
-		newContext *ContextHandler
+		newContext *Context
 	)
 
 	subRouter = Group(path, c.Router)
@@ -128,34 +130,34 @@ func (c *ContextHandler) SubRouter(path string, middlewares ...mux.MiddlewareFun
 }
 
 // GET handle http GET request
-func (c *ContextHandler) GET(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
+func (c *Context) GET(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRoute(get, path, ctx, middlewares)
 }
 
 // POST handle http POST request
-func (c *ContextHandler) POST(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
+func (c *Context) POST(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRoute(post, path, ctx, middlewares)
 }
 
 // PUT handle http PUT request
-func (c *ContextHandler) PUT(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
+func (c *Context) PUT(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRoute(put, path, ctx, middlewares)
 }
 
 // PATCH handle http PATCH request
-func (c *ContextHandler) PATCH(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
+func (c *Context) PATCH(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRoute(patch, path, ctx, middlewares)
 }
 
 // DELETE handle http DELETE request
-func (c *ContextHandler) DELETE(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
+func (c *Context) DELETE(path string, ctx ContextFunc, middlewares ...mux.MiddlewareFunc) {
 	c.addRoute(delete, path, ctx, middlewares)
 }
 
 // FormData parse the incoming POST body into "form" struct
 // handle application/json and application/x-www-form-urlencoded
 // and multipart/form-data
-func (c *ContextHandler) FormData(form interface{}) error {
+func (c *Context) FormData(form interface{}) error {
 	contentType := c.Request.Header.Get(contentType)
 
 	if strings.Contains(contentType, "application/json") {
@@ -183,7 +185,7 @@ func (c *ContextHandler) FormData(form interface{}) error {
 
 // FormFile returns the first file for the provided form key.
 // FormFile calls ParseMultipartForm and ParseForm if necessary.
-func (c *ContextHandler) FormFile(field string) (multipart.File, *multipart.FileHeader, error) {
+func (c *Context) FormFile(field string) (multipart.File, *multipart.FileHeader, error) {
 	return c.Request.FormFile(field)
 }
 
@@ -192,7 +194,7 @@ func (c *ContextHandler) FormFile(field string) (multipart.File, *multipart.File
 // PostFormValue calls ParseMultipartForm and ParseForm if necessary and ignores
 // any errors returned by these functions.
 // If key is not present, PostFormValue returns the empty string.
-func (c *ContextHandler) PostFormValue(key string) string {
+func (c *Context) PostFormValue(key string) string {
 	if c.Request.PostForm == nil {
 		c.Request.ParseMultipartForm(defaultMaxMemory)
 	}
@@ -207,7 +209,7 @@ func (c *ContextHandler) PostFormValue(key string) string {
 // PostFormValue calls ParseMultipartForm and ParseForm if necessary and ignores
 // any errors returned by these functions.
 // If key is not present, PostFormValue returns the empty array.
-func (c *ContextHandler) PostFormValues(key string) []string {
+func (c *Context) PostFormValues(key string) []string {
 	if c.Request.PostForm == nil {
 		c.Request.ParseMultipartForm(defaultMaxMemory)
 	}
@@ -216,7 +218,7 @@ func (c *ContextHandler) PostFormValues(key string) []string {
 
 // DecodeURLQuery parse the incoming URL query into struct Urlq.
 // Returns true if everyting went well, otherwise false.
-func (c *ContextHandler) DecodeURLQuery() (urlQuery URLQuery, err error) {
+func (c *Context) DecodeURLQuery() (urlQuery URLQuery, err error) {
 	// get url's query
 	decoder := schema.NewDecoder()
 	decoder.Decode(&urlQuery, c.Request.URL.Query())
@@ -230,83 +232,83 @@ func (c *ContextHandler) DecodeURLQuery() (urlQuery URLQuery, err error) {
 // Get implements Get() of RestHandlers
 // Returns 405-Not allowed if derivied RestHandlers
 // object does not override Get() function
-func (c *ContextHandler) Get() interface{} {
+func (c *Context) Get() interface{} {
 	return c.MethodNotAllowed()
 }
 
 // GetID implements GetID() of RestHandlers
 // Returns 405-Not allowed if derivied RestHandlers
 // object does not override GetID() function
-func (c *ContextHandler) GetID(id string) interface{} {
+func (c *Context) GetID(id string) interface{} {
 	return c.MethodNotAllowed()
 }
 
 // Post implements Post() of RestHandlers
 // Returns 405-Not allowed if derivied RestHandlers
 // object does not override Post() function
-func (c *ContextHandler) Post() interface{} {
+func (c *Context) Post() interface{} {
 	return c.MethodNotAllowed()
 }
 
 // PutID implements PutID() of RestHandlers
 // Returns 405-Not allowed if derivied RestHandlers
 // object does not override PutID() function
-func (c *ContextHandler) PutID(id string) interface{} {
+func (c *Context) PutID(id string) interface{} {
 	return c.MethodNotAllowed()
 }
 
 // Put implements Put() of RestHandlers
 // Returns 405-Not allowed if derivied RestHandlers
 // object does not override Put() function
-func (c *ContextHandler) Put() interface{} {
+func (c *Context) Put() interface{} {
 	return c.MethodNotAllowed()
 }
 
 // PatchID implements PatchID() of RestHandlers
 // Returns 405-Not allowed if derivied RestHandlers
 // object does not override PatchID() function
-func (c *ContextHandler) PatchID(id string) interface{} {
+func (c *Context) PatchID(id string) interface{} {
 	return c.MethodNotAllowed()
 }
 
 // Patch implements Patch() of RestHandlers
 // Returns 405-Not allowed if derivied RestHandlers
 // object does not override Patch() function
-func (c *ContextHandler) Patch() interface{} {
+func (c *Context) Patch() interface{} {
 	return c.MethodNotAllowed()
 }
 
 // DeleteID implements DeleteID() of RestHandlers
 // Returns 405-Not allowed if derivied RestHandlers
 // object does not override DeleteID() function
-func (c *ContextHandler) DeleteID(id string) interface{} {
+func (c *Context) DeleteID(id string) interface{} {
 	return c.MethodNotAllowed()
 }
 
 // Delete implements Delete() of RestHandlers
 // Returns 405-Not allowed if derivied RestHandlers
 // object does not override Delete() function
-func (c *ContextHandler) Delete() interface{} {
+func (c *Context) Delete() interface{} {
 	return c.MethodNotAllowed()
 }
 
 // Created send success response with result data
-func (c *ContextHandler) Created(data interface{}) interface{} {
+func (c *Context) Created(data interface{}) interface{} {
 	return response(c.Writer, MessageCreated, data, http.StatusCreated)
 }
 
 // Success send success response with result data
-func (c *ContextHandler) Success(data interface{}) interface{} {
+func (c *Context) Success(data interface{}) interface{} {
 	return response(c.Writer, MessageOK, data, http.StatusOK)
 }
 
 // NoContent send success response without any content
-func (c *ContextHandler) NoContent() interface{} {
+func (c *Context) NoContent() interface{} {
 	return response(c.Writer, MessageNoContent, nil, http.StatusNoContent)
 }
 
 // BadRequest send general 400-bad request
-func (c *ContextHandler) BadRequest(data error) interface{} {
+func (c *Context) BadRequest(data error) interface{} {
 	return response(c.Writer, MessageBadRequest, data, http.StatusBadRequest)
 }
 
@@ -314,48 +316,48 @@ func (c *ContextHandler) BadRequest(data error) interface{} {
 // this method is equal to PageNotFound() and usually
 // used when record was not found in collection instead of
 // return a page not found message
-func (c *ContextHandler) NotFound() interface{} {
+func (c *Context) NotFound() interface{} {
 	return response(c.Writer, MessageNotFound, errNotFound, http.StatusOK)
 }
 
 // PageNotFound send general 404-not found.
 // this method is equal to NotFound() but returns
 // page not found message
-func (c *ContextHandler) PageNotFound() interface{} {
+func (c *Context) PageNotFound() interface{} {
 	return response(c.Writer, MessagePageNotFound, errPageNotFound, http.StatusNotFound)
 }
 
 // InternalServerError send general 500-interal server error
-func (c *ContextHandler) InternalServerError(data error) interface{} {
+func (c *Context) InternalServerError(data error) interface{} {
 	return response(c.Writer, MessageInternalServerError, data, http.StatusInternalServerError)
 }
 
 // Unauthorized send general 401-unautirized
-func (c *ContextHandler) Unauthorized(data error) interface{} {
+func (c *Context) Unauthorized(data error) interface{} {
 	return response(c.Writer, MessageUnauthorized, data, http.StatusUnauthorized)
 }
 
 // Forbidden send general 403-forbidden
-func (c *ContextHandler) Forbidden(data error) interface{} {
+func (c *Context) Forbidden(data error) interface{} {
 	return response(c.Writer, MessageForbidden, data, http.StatusForbidden)
 }
 
 // MethodNotAllowed send general 405-Method not allowed
-func (c *ContextHandler) MethodNotAllowed() interface{} {
+func (c *Context) MethodNotAllowed() interface{} {
 	return response(c.Writer, MessageMethodNotAllowed, nil, http.StatusMethodNotAllowed)
 }
 
 // NotImplemented send general 405-Method not allowed
-func (c *ContextHandler) NotImplemented() interface{} {
+func (c *Context) NotImplemented() interface{} {
 	return response(c.Writer, MessageNotImplemented, errNotImplemented, http.StatusNotImplemented)
 }
 
-func (c *ContextHandler) Write(message string, data interface{}, status int) interface{} {
+func (c *Context) Write(message string, data interface{}, status int) interface{} {
 	return response(c.Writer, message, data, status)
 }
 
 // SendImage returns image in response body
-func (c *ContextHandler) SendImage(path string) interface{} {
+func (c *Context) SendImage(path string) interface{} {
 	if err := WriteImage(path, c.Writer); err != nil {
 		return &Error{
 			Description: err.Error(),
