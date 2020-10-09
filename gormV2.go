@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jinzhu/copier"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlserver"
@@ -22,25 +23,49 @@ var (
 	}
 )
 
+func getGormConfig(config *gormConfig) *gorm.Config {
+	if config == nil {
+		return defaultGormConfig
+	}
+	var gormConfig gorm.Config
+	copier.Copy(&gormConfig, config)
+
+	return &gormConfig
+}
+
+func gormDebug(db *gorm.DB) *gorm.DB {
+	var debug string
+	debug = strings.ToLower(os.Getenv("DEBUG_MODE"))
+
+	if debug == "true" || debug == "1" {
+		return db.Debug()
+	}
+
+	return db
+}
+
+// NewGormConfig return initial gormConfig
+func NewGormConfig() *gormConfig {
+	var config gormConfig
+
+	config.SkipDefaultTransaction = false
+	config.PrepareStmt = false
+
+	return &config
+}
+
 // GetGormDB returns database instance
 func GetGormDB(alias string) *gorm.DB {
-	return gormDBs[alias].Session(&gorm.Session{SkipDefaultTransaction: true})
+	return gormDebug(gormDBs[alias])
 }
 
 // ConnectMysql open connection to mysql server.
 // Example datasource "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
-func ConnectMysql(alias, dataSource string, config *gorm.Config) {
-	var (
-		err error
-	)
+func ConnectMysql(alias, dataSource string, config *gormConfig) {
+	var err error
 
 	if gormDBs[alias] == nil {
-
-		if config == nil {
-			config = defaultGormConfig
-		}
-
-		gormDBs[alias], err = gorm.Open(mysql.Open(dataSource), config)
+		gormDBs[alias], err = gorm.Open(mysql.Open(dataSource), getGormConfig(config))
 
 		if err != nil {
 			err = &Error{
@@ -54,19 +79,11 @@ func ConnectMysql(alias, dataSource string, config *gorm.Config) {
 
 // ConnectPostgres open connection to postgres server
 // "user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
-func ConnectPostgres(alias, dataSource string, config *gorm.Config) {
-	var (
-		debug string
-		err   error
-	)
+func ConnectPostgres(alias, dataSource string, config *gormConfig) {
+	var err error
 
 	if gormDBs[alias] == nil {
-
-		if config == nil {
-			config = defaultGormConfig
-		}
-
-		gormDBs[alias], err = gorm.Open(postgres.Open(dataSource), config)
+		gormDBs[alias], err = gorm.Open(postgres.Open(dataSource), getGormConfig(config))
 
 		if err != nil {
 			err = &Error{
@@ -75,30 +92,16 @@ func ConnectPostgres(alias, dataSource string, config *gorm.Config) {
 			}
 			log.Fatalf("[go-handler] fatal: %v", err)
 		}
-
-		debug = os.Getenv("DEBUG_MODE")
-		debug = strings.ToLower(debug)
-
-		if debug == "true" || debug == "1" {
-			gormDBs[alias] = gormDBs[alias].Debug()
-		}
 	}
 }
 
 // ConnectMssql open connection to postgres server
 // "sqlserver://gorm:LoremIpsum86@localhost:9930?database=gorm"
-func ConnectMssql(alias, dataSource string, config *gorm.Config) {
-	var (
-		err error
-	)
+func ConnectMssql(alias, dataSource string, config *gormConfig) {
+	var err error
 
 	if gormDBs[alias] == nil {
-
-		if config == nil {
-			config = defaultGormConfig
-		}
-
-		gormDBs[alias], err = gorm.Open(sqlserver.Open(dataSource), config)
+		gormDBs[alias], err = gorm.Open(sqlserver.Open(dataSource), getGormConfig(config))
 
 		if err != nil {
 			err = &Error{
