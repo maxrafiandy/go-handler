@@ -82,4 +82,5 @@ type redisOptions struct {
 // GormConfig inherits gorm.Config
 type gormConfig struct {
 	gorm.Config
+	dataSource string
 }

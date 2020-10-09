@@ -45,9 +45,10 @@ func gormDebug(db *gorm.DB) *gorm.DB {
 }
 
 // NewGormConfig return initial gormConfig
-func NewGormConfig() *gormConfig {
+func NewGormConfig(dataSource string) *gormConfig {
 	var config gormConfig
 
+	config.dataSource = dataSource
 	config.SkipDefaultTransaction = false
 	config.PrepareStmt = false
 
@@ -61,11 +62,11 @@ func GetGormDB(alias string) *gorm.DB {
 
 // ConnectMysql open connection to mysql server.
 // Example datasource "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
-func ConnectMysql(alias, dataSource string, config *gormConfig) {
+func ConnectMysql(alias string, config *gormConfig) {
 	var err error
 
 	if gormDBs[alias] == nil {
-		gormDBs[alias], err = gorm.Open(mysql.Open(dataSource), getGormConfig(config))
+		gormDBs[alias], err = gorm.Open(mysql.Open(config.dataSource), getGormConfig(config))
 
 		if err != nil {
 			err = &Error{
@@ -79,11 +80,11 @@ func ConnectMysql(alias, dataSource string, config *gormConfig) {
 
 // ConnectPostgres open connection to postgres server
 // "user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
-func ConnectPostgres(alias, dataSource string, config *gormConfig) {
+func ConnectPostgres(alias string, config *gormConfig) {
 	var err error
 
 	if gormDBs[alias] == nil {
-		gormDBs[alias], err = gorm.Open(postgres.Open(dataSource), getGormConfig(config))
+		gormDBs[alias], err = gorm.Open(postgres.Open(config.dataSource), getGormConfig(config))
 
 		if err != nil {
 			err = &Error{
@@ -97,11 +98,11 @@ func ConnectPostgres(alias, dataSource string, config *gormConfig) {
 
 // ConnectMssql open connection to postgres server
 // "sqlserver://gorm:LoremIpsum86@localhost:9930?database=gorm"
-func ConnectMssql(alias, dataSource string, config *gormConfig) {
+func ConnectMssql(alias string, config *gormConfig) {
 	var err error
 
 	if gormDBs[alias] == nil {
-		gormDBs[alias], err = gorm.Open(sqlserver.Open(dataSource), getGormConfig(config))
+		gormDBs[alias], err = gorm.Open(sqlserver.Open(config.dataSource), getGormConfig(config))
 
 		if err != nil {
 			err = &Error{
