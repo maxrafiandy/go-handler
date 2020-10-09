@@ -4,6 +4,8 @@ import (
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/go-redis/redis"
+	"gorm.io/gorm"
 )
 
 // Response struct hold default server response
@@ -61,8 +63,8 @@ func (u URLQuery) Validate() error {
 	)
 }
 
-// Gormv1Prop struct for database connection
-type Gormv1Prop struct {
+// gormv1Config struct for database connection
+type gormv1Config struct {
 	host             string
 	port             string
 	user             string
@@ -72,10 +74,12 @@ type Gormv1Prop struct {
 	connectionString string
 }
 
-// RedisProp struct for cached connection
-type RedisProp struct {
-	host     string
-	port     string
-	pass     string
-	database int
+// RedisOptions inherits redis.Options
+type redisOptions struct {
+	redis.Options
+}
+
+// GormConfig inherits gorm.Config
+type gormConfig struct {
+	gorm.Config
 }

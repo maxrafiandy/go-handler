@@ -90,9 +90,6 @@ var (
 
 // public variables
 var (
-	// GormProps maps database properties
-	GormProps map[string]*Gormv1Prop = make(map[string]*Gormv1Prop)
-
 	indexMethods []string = []string{get, post, put, delete, patch}
 	subIDMethods []string = []string{get, put, patch, delete}
 )
