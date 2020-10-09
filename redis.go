@@ -2,32 +2,41 @@ package handler
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/go-redis/redis"
+	"github.com/jinzhu/copier"
 )
 
 var (
 	redisDBs map[string]*redis.Client = make(map[string]*redis.Client)
 )
 
-// NewRedisProp returns new database property
-func NewRedisProp(host, port, pass string, db int) *RedisProp {
-	return &RedisProp{
-		host:     host,
-		port:     port,
-		pass:     pass,
-		database: db,
-	}
+// NewRedisOptions returns new database property
+func NewRedisOptions(host, port, pass string, db int) *redisOptions {
+	var prop redisOptions
+
+	prop.Addr = fmt.Sprintf("%s:%s", host, port)
+	prop.Password = pass
+	prop.DB = db
+
+	return &prop
 }
 
 // AddRedis returns new client of redis host
-func AddRedis(alias string, prop *RedisProp) *redis.Client {
+func AddRedis(alias string, prop *redisOptions) *redis.Client {
+	var (
+		err error
+		opt redis.Options
+	)
+
 	if redisDBs[alias] == nil {
-		redisDBs[alias] = redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%s", prop.host, prop.port),
-			Password: prop.pass,
-			DB:       prop.database,
-		})
+		copier.Copy(&opt, prop)
+		redisDBs[alias] = redis.NewClient(&opt)
+
+		if _, err = redisDBs[alias].Ping().Result(); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	return redisDBs[alias]
