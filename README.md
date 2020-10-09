@@ -4,6 +4,7 @@ This handler use [gorilla mux](https://github.com/gorilla/mux) structs as defaul
 # How to use
 - Run `go get github.com/maxrafiandy/go-handler`
 - (Optional) Set enviroment variable `ERROR_IMAGE` with value of */path/to/error/image.png*. Otherwise SendImage(path) returning page not found
+- (Optional) Set enviroment variable `DEBUG_MODE` with value of *true* or *false* to print gorm query log. Default value is *false*
 
 # Examples
 ## Standard Route
