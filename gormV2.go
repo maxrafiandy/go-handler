@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"os"
 	"strconv"
@@ -56,62 +55,58 @@ func NewGormConfig(dataSource string) *GormConfig {
 }
 
 // GetGormDB returns database instance
-func GetGormDB(alias string) *gorm.DB {
-	return gormDebug(gormDBs[alias])
+func GetGormDB(alias string) (*gorm.DB, error) {
+	var err error
+	if gormDBs[alias] == nil {
+		err = fmt.Errorf("no such connection alias named %s", alias)
+		return nil, DescError(err)
+	}
+	return gormDebug(gormDBs[alias]), nil
 }
 
 // ConnectMysql open connection to mysql server.
 // Example datasource "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
-func ConnectMysql(alias string, config *GormConfig) {
+func ConnectMysql(alias string, config *GormConfig) error {
 	var err error
 
 	if gormDBs[alias] == nil {
 		gormDBs[alias], err = gorm.Open(mysql.Open(config.dataSource), getGormConfig(config))
 
 		if err != nil {
-			err = &Error{
-				Description: err.Error(),
-				Errors:      err,
-			}
-			log.Fatalf("[go-handler] fatal: %v", err)
+			return DescError(err)
 		}
 	}
+	return nil
 }
 
 // ConnectPostgres open connection to postgres server
 // "user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
-func ConnectPostgres(alias string, config *GormConfig) {
+func ConnectPostgres(alias string, config *GormConfig) error {
 	var err error
 
 	if gormDBs[alias] == nil {
 		gormDBs[alias], err = gorm.Open(postgres.Open(config.dataSource), getGormConfig(config))
 
 		if err != nil {
-			err = &Error{
-				Description: err.Error(),
-				Errors:      err,
-			}
-			log.Fatalf("[go-handler] fatal: %v", err)
+			return DescError(err)
 		}
 	}
+	return nil
 }
 
 // ConnectMssql open connection to postgres server
 // "sqlserver://gorm:LoremIpsum86@localhost:9930?database=gorm"
-func ConnectMssql(alias string, config *GormConfig) {
+func ConnectMssql(alias string, config *GormConfig) error {
 	var err error
 
 	if gormDBs[alias] == nil {
 		gormDBs[alias], err = gorm.Open(sqlserver.Open(config.dataSource), getGormConfig(config))
 
 		if err != nil {
-			err = &Error{
-				Description: err.Error(),
-				Errors:      err,
-			}
-			log.Fatalf("[go-handler] fatal: %v", err)
+			return DescError(err)
 		}
 	}
+	return nil
 }
 
 // Pagination set offset and limit of query.
