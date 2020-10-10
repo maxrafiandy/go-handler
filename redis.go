@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/copier"
@@ -22,7 +21,7 @@ func NewRedisOptions(host, port, pass string, db int) *RedisOptions {
 }
 
 // AddRedis returns new client of redis host
-func AddRedis(alias string, prop *RedisOptions) *redis.Client {
+func AddRedis(alias string, prop *RedisOptions) error {
 	var (
 		err error
 		opt redis.Options
@@ -33,11 +32,11 @@ func AddRedis(alias string, prop *RedisOptions) *redis.Client {
 		redisDBs[alias] = redis.NewClient(&opt)
 
 		if _, err = redisDBs[alias].Ping().Result(); err != nil {
-			log.Fatal(err)
+			return DescError(err)
 		}
 	}
 
-	return redisDBs[alias]
+	return nil
 }
 
 // GetRedis returns new client of redis host
