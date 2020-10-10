@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -190,7 +191,7 @@ func Write(w http.ResponseWriter, message string, data interface{}, status int) 
 // string err.Error() as its description
 func DescError(err error) *Error {
 	return &Error{
-		Description: err.Error(),
+		Description: fmt.Sprintf("[go-handler] %v", err.Error()),
 		Errors:      err,
 	}
 }
