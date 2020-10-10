@@ -13,10 +13,6 @@ import (
 )
 
 type (
-	context interface {
-		ServeHTTP(http.ResponseWriter, *http.Response)
-	}
-
 	// Context context
 	Context struct {
 		handlers map[string]ContextFunc
@@ -27,7 +23,7 @@ type (
 		Vars     map[string]string // Vars
 	}
 
-	// ContextFunc func
+	// ContextFunc func, this func implement http.Handler
 	ContextFunc func(*Context) interface{}
 )
 
@@ -45,8 +41,15 @@ func New(middlewares ...mux.MiddlewareFunc) *Context {
 }
 
 // DB returns database instance
-func (c *Context) DB(alias string) *gorm.DB {
+func (c *Context) DB(alias string) (*gorm.DB, error) {
 	return GetGormDB(alias)
+}
+
+// Use sets middlewares chain within context Router
+func (c *Context) Use(middlewares ...mux.MiddlewareFunc) {
+	if len(middlewares) > 0 {
+		c.Router.Use(middlewares...)
+	}
 }
 
 // Serve call http.ListenAndServe with default setting
@@ -99,8 +102,9 @@ func (c *Context) addRoute(method, path string, ctx ContextFunc, middlewares []m
 
 func (c *Context) addRest(method, path string, ctx ContextFunc, middlewares []mux.MiddlewareFunc) {
 	c.add(method, path, ctx, middlewares)
-	sub := Group(path, c.Router)
 
+	var sub *mux.Router
+	sub = Group(path, c.Router)
 	sub.Handle(index, c.handlers[method+path]).Methods(indexMethods...)
 	sub.Handle(subID, c.handlers[method+path]).Methods(subIDMethods...)
 }
@@ -164,7 +168,8 @@ func (c *Context) DELETE(path string, ctx ContextFunc, middlewares ...mux.Middle
 // handle application/json and application/x-www-form-urlencoded
 // and multipart/form-data
 func (c *Context) FormData(form interface{}) error {
-	contentType := c.Request.Header.Get(contentType)
+	var contentType string
+	contentType = c.Request.Header.Get(contentType)
 
 	if strings.Contains(contentType, "application/json") {
 		decoder := json.NewDecoder(c.Request.Body)
@@ -364,11 +369,9 @@ func (c *Context) Write(message string, data interface{}, status int) interface{
 
 // SendImage returns image in response body
 func (c *Context) SendImage(path string) interface{} {
-	if err := WriteImage(path, c.Writer); err != nil {
-		return &Error{
-			Description: err.Error(),
-			Errors:      err,
-		}
+	var err error
+	if err = WriteImage(path, c.Writer); err != nil {
+		return DescError(err)
 	}
 	return "send image: " + path
 }
