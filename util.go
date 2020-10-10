@@ -80,9 +80,10 @@ func errorImage(w http.ResponseWriter) interface{} {
 // WriteImage send response as an image
 func WriteImage(path string, w http.ResponseWriter) error {
 	// inner function for failure action
-	fail := func(data interface{}) {
+	fail := func(err error) error {
 		errorImage(w)
-		Logger(data)
+		Logger(err)
+		return DescError(err)
 	}
 	var fimg image.Image
 	var img *os.File
@@ -124,8 +125,7 @@ func WriteImage(path string, w http.ResponseWriter) error {
 	}
 
 	if err != nil {
-		fail(err)
-		return err
+		return fail(err)
 	}
 
 	w.Header().Set("Strict-Transport-Security", "max-age=31536000")
@@ -134,8 +134,7 @@ func WriteImage(path string, w http.ResponseWriter) error {
 	w.WriteHeader(http.StatusOK)
 
 	if _, err := w.Write(bimg.Bytes()); err != nil {
-		fail(err)
-		return err
+		return fail(err)
 	}
 	Logger(path)
 	return nil

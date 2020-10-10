@@ -8,13 +8,11 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-var (
-	redisDBs map[string]*redis.Client = make(map[string]*redis.Client)
-)
+var redisDBs map[string]*redis.Client = make(map[string]*redis.Client)
 
 // NewRedisOptions returns new database property
-func NewRedisOptions(host, port, pass string, db int) *redisOptions {
-	var prop redisOptions
+func NewRedisOptions(host, port, pass string, db int) *RedisOptions {
+	var prop RedisOptions
 
 	prop.Addr = fmt.Sprintf("%s:%s", host, port)
 	prop.Password = pass
@@ -24,7 +22,7 @@ func NewRedisOptions(host, port, pass string, db int) *redisOptions {
 }
 
 // AddRedis returns new client of redis host
-func AddRedis(alias string, prop *redisOptions) *redis.Client {
+func AddRedis(alias string, prop *RedisOptions) *redis.Client {
 	var (
 		err error
 		opt redis.Options

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
+	"gorm.io/gorm"
 )
 
 type (
@@ -41,6 +42,11 @@ func New(middlewares ...mux.MiddlewareFunc) *Context {
 
 	h.handlers = make(map[string]ContextFunc)
 	return h
+}
+
+// DB returns database instance
+func (c *Context) DB(alias string) *gorm.DB {
+	return GetGormDB(alias)
 }
 
 // Serve call http.ListenAndServe with default setting

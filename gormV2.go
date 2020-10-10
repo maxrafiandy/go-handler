@@ -23,7 +23,7 @@ var (
 	}
 )
 
-func getGormConfig(config *gormConfig) *gorm.Config {
+func getGormConfig(config *GormConfig) *gorm.Config {
 	if config == nil {
 		return defaultGormConfig
 	}
@@ -45,8 +45,8 @@ func gormDebug(db *gorm.DB) *gorm.DB {
 }
 
 // NewGormConfig return initial gormConfig
-func NewGormConfig(dataSource string) *gormConfig {
-	var config gormConfig
+func NewGormConfig(dataSource string) *GormConfig {
+	var config GormConfig
 
 	config.dataSource = dataSource
 	config.SkipDefaultTransaction = false
@@ -62,7 +62,7 @@ func GetGormDB(alias string) *gorm.DB {
 
 // ConnectMysql open connection to mysql server.
 // Example datasource "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
-func ConnectMysql(alias string, config *gormConfig) {
+func ConnectMysql(alias string, config *GormConfig) {
 	var err error
 
 	if gormDBs[alias] == nil {
@@ -80,7 +80,7 @@ func ConnectMysql(alias string, config *gormConfig) {
 
 // ConnectPostgres open connection to postgres server
 // "user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
-func ConnectPostgres(alias string, config *gormConfig) {
+func ConnectPostgres(alias string, config *GormConfig) {
 	var err error
 
 	if gormDBs[alias] == nil {
@@ -98,7 +98,7 @@ func ConnectPostgres(alias string, config *gormConfig) {
 
 // ConnectMssql open connection to postgres server
 // "sqlserver://gorm:LoremIpsum86@localhost:9930?database=gorm"
-func ConnectMssql(alias string, config *gormConfig) {
+func ConnectMssql(alias string, config *GormConfig) {
 	var err error
 
 	if gormDBs[alias] == nil {
