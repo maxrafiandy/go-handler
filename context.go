@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"gorm.io/gorm"
@@ -43,6 +44,11 @@ func New(middlewares ...mux.MiddlewareFunc) *Context {
 // DB returns database instance
 func (c *Context) DB(alias string) (*gorm.DB, error) {
 	return GetGormDB(alias)
+}
+
+// Redis returns database instance
+func (c *Context) Redis(alias string) (*redis.Client, error) {
+	return GetRedis(alias)
 }
 
 // Use sets middlewares chain within context Router
