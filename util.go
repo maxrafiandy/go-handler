@@ -144,29 +144,32 @@ func WriteImage(path string, w http.ResponseWriter) error {
 // FormData parse the incoming POST body into struct
 // only handle application/json and application/x-www-form-urlencoded
 func FormData(form interface{}, r *http.Request) error {
-	contentType := r.Header.Get(contentType)
+	var (
+		err           error
+		contentType   string
+		jsonDecoder   *json.Decoder
+		schemaDecoder *schema.Decoder
+	)
+	contentType = r.Header.Get(contentType)
 
 	if strings.Contains(contentType, "application/json") {
-		decoder := json.NewDecoder(r.Body)
-		decoder.Decode(form)
-		return nil
+		jsonDecoder = json.NewDecoder(r.Body)
+		jsonDecoder.Decode(form)
 	} else if strings.Contains(contentType, "application/x-www-form-urlencoded") {
 		r.ParseForm()
-		decoder := schema.NewDecoder()
-		decoder.Decode(form, r.Form)
-		return nil
+		schemaDecoder = schema.NewDecoder()
+		schemaDecoder.Decode(form, r.Form)
 	} else if strings.Contains(contentType, "multipart/form-data") {
 		r.ParseMultipartForm(10 << 20)
-		decoder := schema.NewDecoder()
-		decoder.Decode(form, r.Form)
-		return nil
+		schemaDecoder = schema.NewDecoder()
+		schemaDecoder.Decode(form, r.Form)
 	} else {
-		custError := &Error{
+		err = &Error{
 			Description: invalidContentType,
 		}
-		Logger(custError)
-		return custError
+		Logger(err)
 	}
+	return err
 }
 
 // DecodeURLQuery parse the incoming URL query into struct Urlq.
@@ -176,7 +179,7 @@ func DecodeURLQuery(w http.ResponseWriter, v url.Values) (args URLQuery, err err
 	decoder := schema.NewDecoder()
 	decoder.Decode(&args, v)
 	if err := args.Validate(); err != nil {
-		return args, err
+		return args, DescError(err)
 	}
 
 	return args, nil
@@ -191,21 +194,44 @@ func Write(w http.ResponseWriter, message string, data interface{}, status int) 
 // string err.Error() as its description
 func DescError(err error) *Error {
 	return &Error{
-		Description: fmt.Sprintf("[go-handler] %v", err.Error()),
+		Description: err.Error(),
 		Errors:      err,
 	}
 }
 
-// response returns JSON encoded datas
+// response returns JSON encoded data
 func response(w http.ResponseWriter, message string, data interface{}, status int) interface{} {
-	// write collected headers with status
-	w.WriteHeader(status)
+	var (
+		response            Response
+		responseContentType string
+		jsonEncoder         *json.Encoder
+	)
 
-	// encode data to json format
-	encoder := json.NewEncoder(w)
-	response := Response{Message: message, Data: data}
-	encoder.Encode(response)
+	responseContentType = w.Header().Get(contentType)
 
+	if strings.Contains(responseContentType, "application/json") {
+		// write collected headers with status
+		w.WriteHeader(status)
+
+		// encode data to json format
+		jsonEncoder = json.NewEncoder(w)
+		response = Response{Message: message, Data: data}
+		jsonEncoder.Encode(response)
+	} else {
+		var (
+			buffer bytes.Buffer
+			err    error
+		)
+		_, err = fmt.Fprintf(&buffer, "%+v", data)
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Something went wrong!"))
+		} else {
+			w.WriteHeader(status)
+			w.Write(buffer.Bytes())
+		}
+	}
 	// write log
 	Logger(response)
 

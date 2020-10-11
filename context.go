@@ -230,11 +230,12 @@ func (c *Context) PostFormValues(key string) []string {
 // DecodeURLQuery parse the incoming URL query into struct Urlq.
 // Returns true if everyting went well, otherwise false.
 func (c *Context) DecodeURLQuery() (urlQuery URLQuery, err error) {
+	var decoder *schema.Decoder
 	// get url's query
-	decoder := schema.NewDecoder()
+	decoder = schema.NewDecoder()
 	decoder.Decode(&urlQuery, c.Request.URL.Query())
-	if err := urlQuery.Validate(); err != nil {
-		return urlQuery, err
+	if err = urlQuery.Validate(); err != nil {
+		return urlQuery, DescError(err)
 	}
 
 	return urlQuery, nil

@@ -1,5 +1,7 @@
 package handler
 
+import "net/http"
+
 // private constants
 const (
 	formatDate              string = "2006-01-02"
@@ -19,12 +21,13 @@ const (
 	subID string = "/{id}"
 
 	id      string = "id"
-	get     string = "GET"
-	post    string = "POST"
-	put     string = "PUT"
-	patch   string = "PATCH"
-	delete  string = "DELETE"
 	restful string = "rest"
+
+	get    string = http.MethodGet
+	post   string = http.MethodPost
+	put    string = http.MethodPut
+	patch  string = http.MethodPatch
+	delete string = http.MethodDelete
 
 	// 10MB
 	defaultMaxMemory int64 = 10 << 20
