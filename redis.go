@@ -40,6 +40,11 @@ func AddRedis(alias string, prop *RedisOptions) error {
 }
 
 // GetRedis returns new client of redis host
-func GetRedis(alias string) *redis.Client {
-	return redisDBs[alias]
+func GetRedis(alias string) (*redis.Client, error) {
+	var err error
+	if redisDBs[alias] == nil {
+		err = DescError(fmt.Errorf("no such connection alias named %s", alias))
+		return nil, err
+	}
+	return redisDBs[alias], nil
 }
