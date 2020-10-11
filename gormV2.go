@@ -155,7 +155,7 @@ func Pagination(db *gorm.DB, urlQuery URLQuery, dateColumn ...string) *gorm.DB {
 // PageResult handle detail of BuildQuery and returns PaginationResult.
 // This should called after Pagination() function to generate offset limit.
 // Warning: must supply executed gorm.DB object () ex: PageResult(db.Find(&users), urlQuery)
-func PageResult(dbResult *gorm.DB, resultSet interface{}, urlQuery URLQuery) *PaginationResult {
+func PageResult(dbResult *gorm.DB, resultSet interface{}, urlQuery URLQuery) PaginationResult {
 	var (
 		count     int64
 		limit     int = 10
@@ -170,6 +170,10 @@ func PageResult(dbResult *gorm.DB, resultSet interface{}, urlQuery URLQuery) *Pa
 
 	if len(urlQuery.ItemsPerPage) != 0 {
 		limit, _ = strconv.Atoi(urlQuery.ItemsPerPage)
+
+		if limit > 100 {
+			limit = 100
+		}
 	}
 
 	if len(urlQuery.Page) != 0 {
@@ -193,5 +197,5 @@ func PageResult(dbResult *gorm.DB, resultSet interface{}, urlQuery URLQuery) *Pa
 		result.EndDate = &endDate
 	}
 
-	return &result
+	return result
 }
