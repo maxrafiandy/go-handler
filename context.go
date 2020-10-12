@@ -174,19 +174,19 @@ func (c *Context) DELETE(path string, ctx ContextFunc, middlewares ...mux.Middle
 // handle application/json and application/x-www-form-urlencoded
 // and multipart/form-data
 func (c *Context) FormData(form interface{}) error {
-	var contentType string
-	contentType = c.Request.Header.Get(contentType)
+	var headerContentType string
+	headerContentType = c.Request.Header.Get(contentType)
 
-	if strings.Contains(contentType, "application/json") {
+	if strings.Contains(headerContentType, "application/json") {
 		decoder := json.NewDecoder(c.Request.Body)
 		decoder.Decode(form)
 		return nil
-	} else if strings.Contains(contentType, "application/x-www-form-urlencoded") {
+	} else if strings.Contains(headerContentType, "application/x-www-form-urlencoded") {
 		c.Request.ParseForm()
 		decoder := schema.NewDecoder()
 		decoder.Decode(form, c.Request.Form)
 		return nil
-	} else if strings.Contains(contentType, "multipart/form-data") {
+	} else if strings.Contains(headerContentType, "multipart/form-data") {
 		c.Request.ParseMultipartForm(defaultMaxMemory)
 		decoder := schema.NewDecoder()
 		decoder.Decode(form, c.Request.Form)
