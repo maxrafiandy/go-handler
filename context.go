@@ -78,7 +78,7 @@ func (f ContextFunc) HandlerFunc(w http.ResponseWriter, r *http.Request) interfa
 
 	switch ctx.result.(type) {
 	case error, Error, *Error:
-		fmt.Printf("[go-handler] error: {%v}\n", ctx.result)
+		fmt.Printf("[go-handler] error: %+v\n", ctx.result)
 	default:
 		fmt.Println("[go-handler] info: request complete")
 	}
