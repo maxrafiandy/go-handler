@@ -330,12 +330,12 @@ func (c *Context) BadRequest(data error) interface{} {
 	return response(c.Writer, MessageBadRequest, data, http.StatusBadRequest)
 }
 
-// NotFound send general 200-Succes withoud data.
+// NotFound send general 404-Not found.
 // this method is equal to PageNotFound() and usually
 // used when record was not found in collection instead of
 // return a page not found message
 func (c *Context) NotFound() interface{} {
-	return response(c.Writer, MessageNotFound, errNotFound, http.StatusOK)
+	return response(c.Writer, MessageNotFound, errNotFound, http.StatusNotFound)
 }
 
 // PageNotFound send general 404-not found.

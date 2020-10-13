@@ -57,7 +57,7 @@ const (
 	MessageForbidden = "Forbidden"
 
 	// MessageNotFound holds default message for Status Code 404
-	MessageNotFound = "Not found"
+	MessageNotFound = "Record not found"
 
 	// MessagePageNotFound holds default message for Status Code 404
 	MessagePageNotFound = "Page not found"
