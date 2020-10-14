@@ -200,6 +200,11 @@ func (c *Context) FormData(form interface{}) error {
 	}
 }
 
+// RequestContextValue return interface value of request context
+func (c *Context) RequestContextValue(key interface{}) interface{} {
+	return c.Request.Context().Value(key)
+}
+
 // FormFile returns the first file for the provided form key.
 // FormFile calls ParseMultipartForm and ParseForm if necessary.
 func (c *Context) FormFile(field string) (multipart.File, *multipart.FileHeader, error) {
