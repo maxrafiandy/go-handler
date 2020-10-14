@@ -79,7 +79,9 @@ type (
 	}
 
 	// GormDB type of gormdb
-	GormDB *gorm.DB
+	GormDB struct {
+		*gorm.DB
+	}
 )
 
 // Error implementation of error interface
