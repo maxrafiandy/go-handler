@@ -84,3 +84,11 @@ type GormConfig struct {
 	gorm.Config
 	dataSource string
 }
+
+// Model inherit from gorm model
+type Model struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+}
