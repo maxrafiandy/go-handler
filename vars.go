@@ -68,6 +68,9 @@ const (
 	// MessageMethodNotAllowed holds default message for Status Code 405
 	MessageMethodNotAllowed = "Method not allowed"
 
+	// MessageConflict holds default message for Status Code 409
+	MessageConflict = "Conflict"
+
 	// MessageInternalServerError holds default message for Status Code 500
 	MessageInternalServerError = "Internal server error"
 
