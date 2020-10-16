@@ -113,8 +113,11 @@ func ConnectMssql(alias string, config *GormConfig) error {
 // Default value of limit is 10, and offset of page 1.
 // Note: dateColumn is an optional parameter and the function
 // only use dateColumn[0]. Call this function before PageResult
-func Pagination(db *gorm.DB, urlQuery URLQuery, dateColumn ...string) *gorm.DB {
+func Pagination(db *gorm.DB, urlQuery URLQuery, columns *FilteredColumn) *gorm.DB {
 	var (
+		id      int
+		keyword string
+		column  string
 		limit   int    = 10
 		page    int    = 0
 		between string = "%s = ?"
@@ -123,6 +126,18 @@ func Pagination(db *gorm.DB, urlQuery URLQuery, dateColumn ...string) *gorm.DB {
 	if len(urlQuery.ItemsPerPage) != 0 {
 		limit, _ = strconv.Atoi(urlQuery.ItemsPerPage)
 	}
+
+	if columns != nil && len(columns.KeywordColumns) > 0 && len(urlQuery.Keyword) > 0 {
+		keyword = fmt.Sprintf("%s like '%%%s%%'", columns.KeywordColumns[0], urlQuery.Keyword)
+		for id, column = range columns.KeywordColumns {
+			if id == 0 {
+				continue
+			}
+			keyword = keyword + fmt.Sprintf(" or %s like '%%%s%%'", column, urlQuery.Keyword)
+		}
+		db = db.Where(keyword)
+	}
+
 	db = db.Limit(limit)
 
 	if len(urlQuery.Page) != 0 {
@@ -131,20 +146,20 @@ func Pagination(db *gorm.DB, urlQuery URLQuery, dateColumn ...string) *gorm.DB {
 	}
 	db = db.Offset(page)
 
-	if dateColumn != nil {
+	if columns != nil && columns.DateColumn != "" {
 		switch {
 		// if start and end sets
 		case len(urlQuery.StartDate) > 0 && len(urlQuery.EndDate) > 0:
-			between = fmt.Sprintf("%s between ? and ?", dateColumn[0])
+			between = fmt.Sprintf("%s between ? and ?", columns.DateColumn)
 			return db.Where(between, urlQuery.StartDate, urlQuery.EndDate)
 		case len(urlQuery.StartDate) > 0:
-			between = fmt.Sprintf(between, dateColumn[0])
+			between = fmt.Sprintf(between, columns.DateColumn)
 			return db.Where(between, urlQuery.StartDate)
 		case len(urlQuery.EndDate) > 0:
-			between = fmt.Sprintf("%s between ? and ?", dateColumn[0])
+			between = fmt.Sprintf("%s between ? and ?", columns.DateColumn)
 			return db.Where(between, time.Now().Format(formatDate), urlQuery.EndDate)
 		default:
-			between = fmt.Sprintf(between, dateColumn[0])
+			between = fmt.Sprintf(between, columns.DateColumn)
 			return db.Where(between, time.Now().Format(formatDate))
 		}
 	}

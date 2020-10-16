@@ -36,6 +36,12 @@ type (
 		EndDate      string `schema:"end_date" json:"end_date,omitempty"`
 	}
 
+	// FilteredColumn filter columns for paginations
+	FilteredColumn struct {
+		DateColumn     string
+		KeywordColumns []string
+	}
+
 	// PaginationResult for server side rendering
 	PaginationResult struct {
 		List         interface{} `json:"list"`
