@@ -372,7 +372,7 @@ func (c *Context) MethodNotAllowed() interface{} {
 
 // Conflict send general 409-Conflict
 func (c *Context) Conflict() interface{} {
-	return response(c.Writer, MessageMethodNotAllowed, nil, http.StatusConflict)
+	return response(c.Writer, MessageConflict, nil, http.StatusConflict)
 }
 
 // NotImplemented send general 405-Method not allowed
