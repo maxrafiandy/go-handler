@@ -351,28 +351,37 @@ func (c *Context) PageNotFound() interface{} {
 }
 
 // InternalServerError send general 500-interal server error
-func (c *Context) InternalServerError(data error) interface{} {
-	return response(c.Writer, MessageInternalServerError, data, http.StatusInternalServerError)
+func (c *Context) InternalServerError(err error) interface{} {
+	if err == nil {
+		return response(c.Writer, MessageInternalServerError, errInternalServerError, http.StatusInternalServerError)
+	}
+	return response(c.Writer, MessageInternalServerError, err, http.StatusInternalServerError)
 }
 
 // Unauthorized send general 401-unautirized
-func (c *Context) Unauthorized(data error) interface{} {
-	return response(c.Writer, MessageUnauthorized, data, http.StatusUnauthorized)
+func (c *Context) Unauthorized(err error) interface{} {
+	if err == nil {
+		return response(c.Writer, MessageUnauthorized, errUnauthorized, http.StatusUnauthorized)
+	}
+	return response(c.Writer, MessageUnauthorized, err, http.StatusUnauthorized)
 }
 
 // Forbidden send general 403-forbidden
-func (c *Context) Forbidden(data error) interface{} {
-	return response(c.Writer, MessageForbidden, data, http.StatusForbidden)
+func (c *Context) Forbidden(err error) interface{} {
+	if err == nil {
+		return response(c.Writer, MessageForbidden, errForbidden, http.StatusForbidden)
+	}
+	return response(c.Writer, MessageForbidden, err, http.StatusForbidden)
 }
 
 // MethodNotAllowed send general 405-Method not allowed
 func (c *Context) MethodNotAllowed() interface{} {
-	return response(c.Writer, MessageMethodNotAllowed, nil, http.StatusMethodNotAllowed)
+	return response(c.Writer, MessageMethodNotAllowed, errNotAllowed, http.StatusMethodNotAllowed)
 }
 
 // Conflict send general 409-Conflict
 func (c *Context) Conflict() interface{} {
-	return response(c.Writer, MessageConflict, nil, http.StatusConflict)
+	return response(c.Writer, MessageConflict, errConflict, http.StatusConflict)
 }
 
 // NotImplemented send general 405-Method not allowed

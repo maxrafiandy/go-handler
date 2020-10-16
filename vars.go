@@ -92,6 +92,21 @@ var (
 	errPageNotFound Error = Error{
 		Description: MessagePageNotFound,
 	}
+	errConflict Error = Error{
+		Description: MessageConflict,
+	}
+	errForbidden Error = Error{
+		Description: MessageForbidden,
+	}
+	errUnauthorized Error = Error{
+		Description: MessageUnauthorized,
+	}
+	errInternalServerError Error = Error{
+		Description: MessageInternalServerError,
+	}
+	errNotAllowed Error = Error{
+		Description: MessageMethodNotAllowed,
+	}
 )
 
 // public variables
