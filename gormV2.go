@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -180,7 +181,12 @@ func PageResult(dbResult *gorm.DB, resultSet interface{}, urlQuery URLQuery) Pag
 		endDate   time.Time
 	)
 
-	result.List = resultSet
+	if reflect.TypeOf(resultSet).Kind() != reflect.Slice {
+		result.List = []string{}
+	} else {
+		result.List = resultSet
+	}
+
 	dbResult.Offset(-1).Count(&count)
 
 	if len(urlQuery.ItemsPerPage) != 0 {
