@@ -10,7 +10,7 @@ const (
 	contentLength           string = "Content-Length"
 	imageJPG                string = "image/jpeg"
 	imagePNG                string = "image/png"
-	invalidContentType      string = "Invalid content type"
+	invalidContentType      string = "Invalid content type or the request contains empty body"
 	invalidDateFormat       string = "Invalid date format"
 	decodeFail              string = "Unable to decode file content. The file format is not in jpg neither png"
 	noImagePath             string = "assets/no-image.png"
