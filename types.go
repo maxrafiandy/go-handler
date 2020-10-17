@@ -34,10 +34,13 @@ type (
 		Keyword      string `schema:"keyword" json:"keyword,omitempty"`
 		StartDate    string `schema:"start_date" json:"start_date,omitempty"`
 		EndDate      string `schema:"end_date" json:"end_date,omitempty"`
+		OrderBy      string `schema:"order_by" json:"order_by"`
+		Descending   string `schema:"descending" json:"descending"`
 	}
 
 	// FilteredColumn filter columns for paginations
 	FilteredColumn struct {
+		OrderBy        string
 		DateColumn     string
 		KeywordColumns []string
 	}

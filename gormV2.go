@@ -128,6 +128,14 @@ func Pagination(db *gorm.DB, urlQuery URLQuery, columns *FilteredColumn) *gorm.D
 		limit, _ = strconv.Atoi(urlQuery.ItemsPerPage)
 	}
 
+	if columns != nil && len(columns.OrderBy) > 0 {
+		if strings.ToLower(urlQuery.Descending) == logicalTrue {
+			db = db.Order(columns.OrderBy + " DESC")
+		} else {
+			db = db.Order(columns.OrderBy + " ASC")
+		}
+	}
+
 	if columns != nil && len(columns.KeywordColumns) > 0 && len(urlQuery.Keyword) > 0 {
 		keyword = fmt.Sprintf("%s like '%%%s%%'", columns.KeywordColumns[0], urlQuery.Keyword)
 		for id, column = range columns.KeywordColumns {

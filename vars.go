@@ -20,8 +20,9 @@ const (
 	index string = ""
 	subID string = "/{id}"
 
-	id      string = "id"
-	restful string = "rest"
+	id          string = "id"
+	restful     string = "rest"
+	logicalTrue string = "true"
 
 	get    string = http.MethodGet
 	post   string = http.MethodPost
