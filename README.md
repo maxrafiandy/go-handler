@@ -100,13 +100,16 @@ func (t *testRest) DeleteID(id string) interface{} {
 func main() {
   var (
     goHandler *handler.Context
-    rest testRest
   )
 
   // all method are accepted in goHandler.REST func, in order to map
   // resource of testRest instance (inherit from handler.Context) to
   // correct methods, we need to call handler.REST  
   goHandler.REST("/example-rest", func(ctx *handler.Context) interface{} {
+    // Data race warning!!! Don't passed ctx as REST's resHandler.
+	  // to avoid multiple request accessing same *ctx resource
+	  // the REST's RestHandler (first argument) must be a new instance to derified *handler.Context
+    var rest testRest
     return handler.REST(&rest, ctx)
   })
 

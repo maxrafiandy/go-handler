@@ -331,8 +331,11 @@ func (c *Context) NoContent() interface{} {
 }
 
 // BadRequest send general 400-bad request
-func (c *Context) BadRequest(data error) interface{} {
-	return response(c.Writer, MessageBadRequest, data, http.StatusBadRequest)
+func (c *Context) BadRequest(err error) interface{} {
+	if err == nil {
+		return response(c.Writer, MessageBadRequest, errBadRequest, http.StatusBadRequest)
+	}
+	return response(c.Writer, MessageBadRequest, err, http.StatusBadRequest)
 }
 
 // NotFound send general 404-Not found.

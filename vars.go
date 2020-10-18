@@ -87,6 +87,9 @@ var (
 	errNotImplemented Error = Error{
 		Description: MessageNotImplemented,
 	}
+	errBadRequest Error = Error{
+		Description: MessageBadRequest,
+	}
 	errNotFound Error = Error{
 		Description: MessageNotFound,
 	}
