@@ -73,7 +73,7 @@ func (f ContextFunc) HandlerFunc(w http.ResponseWriter, r *http.Request) interfa
 	var ctx Context
 
 	ctx.reset(w, r)
-	ctx.Vars = mux.Vars(r)
+	// ctx.Vars = mux.Vars(r)
 	ctx.result = f(&ctx)
 
 	switch ctx.result.(type) {
@@ -92,6 +92,7 @@ func (f ContextFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
+	c.Vars = mux.Vars(r)
 	c.setWriter(w)
 	c.setRequest(r)
 }
